@@ -8,8 +8,8 @@ export function renderVocationalModuleView() {
 
   return `
     <div class="page-container">
-      <header class="flex-between">
-        <div>
+      <header class="flex-between" style="align-items:flex-start;">
+        <div style="max-width:42rem;">
           <div class="flex-row">
             <h1 class="page-title">${t('Vocational Education Intelligence', 'தொழிற்கல்வி நுண்ணறிவுப் பிரிவு')}</h1>
             <span class="badge badge-primary">Trade &amp; Practical Rubrics</span>
@@ -17,8 +17,8 @@ export function renderVocationalModuleView() {
           <p class="page-subtitle">Tamil Nadu State Board Vocational Stream (Class 12) theory blueprints, workshop safety protocols, and hands-on skill logs.</p>
         </div>
 
-        <div class="flex-row">
-          <label class="text-xs" style="font-weight:700;">${t('Select Trade:', 'தொழிற்பிரிவைத் தேர்ந்தெடுக்கவும்:')}</label>
+        <div class="flex-row" style="justify-content:flex-end;">
+          <label for="voc-trade-select" class="text-xs" style="font-weight:700;">${t('Select Trade:', 'தொழிற்பிரிவைத் தேர்ந்தெடுக்கவும்:')}</label>
           <select id="voc-trade-select" class="select" style="width:auto;min-width:18rem;">
             ${VOCATIONAL_MODULES_DATA.map(
               (tr) => `<option value="${escapeHtml(tr.tradeCode)}" ${tr.tradeCode === trade.tradeCode ? 'selected' : ''}>Trade ${escapeHtml(tr.tradeCode)}: ${escapeHtml(tr.name)}</option>`

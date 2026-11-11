@@ -4,7 +4,9 @@ import { appState, escapeHtml, showToast, t, triggerRender } from '../state.js';
 
 let rhState = {
   stream: 'academic',
+  subject: 'all',
   medium: 'all',
+  year: '2024-2025',
   drawerOpen: false,
   importModalOpen: false,
   importing: false
@@ -14,23 +16,14 @@ export function renderResourceHubView() {
   const filtered = appState.resources.filter((r) => {
     if (rhState.stream === 'vocational' && !r.type.includes('Vocational')) return false;
     if (rhState.stream === 'academic' && r.type.includes('Vocational')) return false;
-    if (rhState.medium === 'ta' && !r.title.includes('Tamil') && !r.title.includes('தமிழ்')) return false;
-    if (rhState.medium === 'en' && !r.title.includes('English') && !r.title.includes('March 2024')) return false;
+    if (rhState.medium === 'ta' && !r.title.includes('Tamil') && !r.title.includes('தமிழ்') && !r.type.includes('Vocational')) return false;
+    if (rhState.medium === 'en' && !r.title.includes('English') && !r.title.includes('March 2024') && !r.type.includes('Vocational')) return false;
     return true;
   });
 
   return `
     <div class="page-container">
-      <div class="flex-row text-xs muted" style="gap:0.4rem;">
-        <span class="material-symbols-outlined" style="font-size:0.95rem;">home_work</span>
-        <span>Resources</span>
-        <span>/</span>
-        <strong style="color:var(--primary);">Verified Resource Hub</strong>
-        <span>/</span>
-        <span>SCERT &amp; DGE Repository 2024–25</span>
-      </div>
-
-      <header class="flex-between">
+      <header class="flex-between" style="align-items:flex-start;">
         <div style="max-width:44rem;">
           <div class="flex-row" style="margin-bottom:0.35rem;">
             <span class="badge badge-secondary"><span class="material-symbols-outlined fill" style="font-size:0.85rem;">verified</span>State Curricular Baseline</span>
@@ -40,14 +33,14 @@ export function renderResourceHubView() {
           <p class="page-subtitle">Official SCERT Textbooks, Question Banks, 5-Year Public Exam Archives &amp; Vocational Curriculum Manuals with differential version audit logs.</p>
         </div>
 
-        <div class="flex-row">
+        <div class="flex-row" style="justify-content:flex-end;">
           <button type="button" id="btn-open-version-drawer" class="btn btn-surface">
             <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.05rem;">difference</span>
             <span>Version Comparison</span>
           </button>
           <button type="button" id="btn-open-import-resource" class="btn btn-primary">
             <span class="material-symbols-outlined" style="font-size:1.05rem;">cloud_upload</span>
-            <span>+ Import New Document / Question Set</span>
+            <span>+ Import Document</span>
           </button>
         </div>
       </header>
@@ -98,36 +91,38 @@ export function renderResourceHubView() {
 
       <section class="card grid grid-4">
         <div>
-          <label class="field-label">Curricular Stream</label>
-          <div class="segmented-pill" style="width:100%;">
-            <button type="button" class="segmented-btn ${rhState.stream === 'academic' ? 'active-white' : ''}" style="flex:1;" data-rh-stream="academic">Academic (Sci/Com)</button>
-            <button type="button" class="segmented-btn ${rhState.stream === 'vocational' ? 'active-white' : ''}" style="flex:1;" data-rh-stream="vocational">Vocational Trades</button>
-          </div>
-        </div>
-        <div>
-          <label class="field-label">Class &amp; Subject</label>
-          <select class="select">
-            <option>Class 12 • Mathematics (Volume 1 &amp; 2)</option>
-            <option>Class 12 • Physics (Theoretical &amp; Practical)</option>
-            <option>Class 12 • Chemistry (Organic &amp; Physical)</option>
-            <option>Class 12 • Computer Science (Python/SQL)</option>
-            <option>Class 12 • Electrical Machines &amp; Appliances</option>
+          <label class="field-label" for="rh-stream-select">Curricular Stream</label>
+          <select id="rh-stream-select" class="select">
+            <option value="all" ${rhState.stream === 'all' ? 'selected' : ''}>All Streams</option>
+            <option value="academic" ${rhState.stream === 'academic' ? 'selected' : ''}>Academic (Sci / Com)</option>
+            <option value="vocational" ${rhState.stream === 'vocational' ? 'selected' : ''}>Vocational Trades</option>
           </select>
         </div>
         <div>
-          <label class="field-label">Instruction Medium</label>
-          <div class="segmented-pill" style="width:100%;">
-            <button type="button" class="segmented-btn ${rhState.medium === 'all' ? 'active-white' : ''}" style="flex:1;" data-rh-medium="all">Bilingual</button>
-            <button type="button" class="segmented-btn ${rhState.medium === 'ta' ? 'active-white' : ''}" style="flex:1;" data-rh-medium="ta">தமிழ்</button>
-            <button type="button" class="segmented-btn ${rhState.medium === 'en' ? 'active-white' : ''}" style="flex:1;" data-rh-medium="en">English</button>
-          </div>
+          <label class="field-label" for="rh-subject-select">Class &amp; Subject</label>
+          <select id="rh-subject-select" class="select">
+            <option value="all" ${rhState.subject === 'all' ? 'selected' : ''}>Class 12 • All Subjects</option>
+            <option value="maths" ${rhState.subject === 'maths' ? 'selected' : ''}>Class 12 • Mathematics (Vol 1 &amp; 2)</option>
+            <option value="physics" ${rhState.subject === 'physics' ? 'selected' : ''}>Class 12 • Physics</option>
+            <option value="chemistry" ${rhState.subject === 'chemistry' ? 'selected' : ''}>Class 12 • Chemistry</option>
+            <option value="cs" ${rhState.subject === 'cs' ? 'selected' : ''}>Class 12 • Computer Science</option>
+            <option value="ema" ${rhState.subject === 'ema' ? 'selected' : ''}>Class 12 • Electrical Machines</option>
+          </select>
         </div>
         <div>
-          <label class="field-label">Baseline Year</label>
-          <select class="select">
-            <option>2024–2025 Edition (Current HSC)</option>
-            <option>2023–2024 Edition (Previous)</option>
-            <option>2022–2023 Edition (Pre-Rationalization)</option>
+          <label class="field-label" for="rh-medium-select">Instruction Medium</label>
+          <select id="rh-medium-select" class="select">
+            <option value="all" ${rhState.medium === 'all' ? 'selected' : ''}>Bilingual (All)</option>
+            <option value="ta" ${rhState.medium === 'ta' ? 'selected' : ''}>தமிழ் (Tamil)</option>
+            <option value="en" ${rhState.medium === 'en' ? 'selected' : ''}>English</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label" for="rh-year-select">Baseline Year</label>
+          <select id="rh-year-select" class="select">
+            <option value="2024-2025" ${rhState.year === '2024-2025' ? 'selected' : ''}>2024–2025 Edition (Current HSC)</option>
+            <option value="2023-2024" ${rhState.year === '2023-2024' ? 'selected' : ''}>2023–2024 Edition (Previous)</option>
+            <option value="2022-2023" ${rhState.year === '2022-2023' ? 'selected' : ''}>2022–2023 Edition (Pre-Rationalization)</option>
           </select>
         </div>
       </section>
@@ -303,18 +298,21 @@ export function renderResourceHubView() {
 }
 
 export function bindResourceHubEvents() {
-  document.querySelectorAll('[data-rh-stream]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      rhState.stream = btn.getAttribute('data-rh-stream');
-      triggerRender();
-    });
+  document.getElementById('rh-stream-select')?.addEventListener('change', (e) => {
+    rhState.stream = e.target.value;
+    triggerRender();
   });
-
-  document.querySelectorAll('[data-rh-medium]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      rhState.medium = btn.getAttribute('data-rh-medium');
-      triggerRender();
-    });
+  document.getElementById('rh-subject-select')?.addEventListener('change', (e) => {
+    rhState.subject = e.target.value;
+    triggerRender();
+  });
+  document.getElementById('rh-medium-select')?.addEventListener('change', (e) => {
+    rhState.medium = e.target.value;
+    triggerRender();
+  });
+  document.getElementById('rh-year-select')?.addEventListener('change', (e) => {
+    rhState.year = e.target.value;
+    triggerRender();
   });
 
   document.getElementById('btn-open-version-drawer')?.addEventListener('click', () => {
@@ -352,23 +350,44 @@ export function bindResourceHubEvents() {
     rhState.importModalOpen = false;
     triggerRender();
   });
+  document.getElementById('import-res-backdrop')?.addEventListener('click', (e) => {
+    if (e.target.id === 'import-res-backdrop') {
+      rhState.importModalOpen = false;
+      triggerRender();
+    }
+  });
 
   document.getElementById('form-import-resource')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const title = document.getElementById('imp-res-title')?.value?.trim() || 'Imported Document';
+    const type = document.getElementById('imp-res-type')?.value || 'SCERT Model Paper';
+    const medium = document.getElementById('imp-res-medium')?.value || 'Bilingual (Tamil & English)';
     rhState.importing = true;
     triggerRender();
     showToast('Uploading document to OCR engine...', 'info');
-    await apiClient.importResource({
-      title: document.getElementById('imp-res-title')?.value,
-      type: document.getElementById('imp-res-type')?.value,
-      medium: document.getElementById('imp-res-medium')?.value
-    });
+    await apiClient.importResource({ title, type, medium });
     setTimeout(() => {
+      appState.resources.unshift({
+        id: `res-imp-${Date.now().toString().slice(-4)}`,
+        title,
+        titleTamil: title,
+        type,
+        code: `TN-IMP-${Math.floor(1000 + Math.random() * 9000)}`,
+        edition: '2024–25 Imported',
+        publisher: 'School Curricular Upload (OCR Verified)',
+        chaptersCount: 5,
+        totalPages: 24,
+        fileSize: '4.8 MB',
+        ocrStatus: 'OCR Completed (99.1%)',
+        confidence: 99.1,
+        allowedForAI: true,
+        badgeColor: '#3525cd'
+      });
       rhState.importing = false;
       rhState.importModalOpen = false;
       showToast('Document OCR Complete! 34 new questions indexed into Question Bank.', 'success');
       triggerRender();
-    }, 900);
+    }, 700);
   });
 
   document.querySelectorAll('[data-preview-res]').forEach((btn) => {

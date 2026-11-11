@@ -1,6 +1,8 @@
 import { apiClient } from '../api/client.js';
 import { appState, escapeHtml, showToast, t, triggerRender } from '../state.js';
 
+let tpAuditModalOpen = false;
+
 export function renderTeachingProgressView() {
   const chapters = appState.chapters;
   const totalSubtopics = chapters.reduce((acc, c) => acc + c.subtopics.length, 0);
@@ -14,44 +16,30 @@ export function renderTeachingProgressView() {
   );
   const lockedSubtopics = totalSubtopics - taughtSubtopics;
   const taughtPct = totalSubtopics ? Math.round((taughtSubtopics / totalSubtopics) * 100) : 0;
+  const inProgressPct = totalSubtopics ? Math.round((inProgressSubtopics / totalSubtopics) * 100) : 0;
   const lockedPct = totalSubtopics ? Math.round((lockedSubtopics / totalSubtopics) * 100) : 0;
 
   return `
     <div class="page-container">
-      <div class="flex-between">
-        <div class="flex-row text-xs muted" style="gap:0.4rem;">
-          <span class="material-symbols-outlined" style="font-size:0.95rem;">menu_book</span>
-          <span>Syllabus Management</span>
-          <span>/</span>
-          <strong style="color:var(--primary);display:inline-flex;align-items:center;gap:0.25rem;">
-            <span class="material-symbols-outlined" style="font-size:0.95rem;">lock_clock</span>
-            Teaching Progress Lock
-          </strong>
-        </div>
-        <div class="flex-row">
-          <div class="badge badge-neutral" style="padding:0.35rem 0.75rem;">
-            <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:var(--secondary);"></span>
-            <span>AI Exam Engine Sync: <strong style="color:var(--secondary);">${appState.progressLockActive ? 'Strict Guard Active' : 'Unrestricted'}</strong></span>
+      <header class="flex-between" style="align-items:flex-start;">
+        <div>
+          <div class="flex-row">
+            <h1 class="page-title">${t('Teaching Progress & Assessment Lock', 'கற்பித்தல் முன்னேற்றம் & தேர்வுப் பூட்டு')}</h1>
+            <span class="badge ${appState.progressLockActive ? 'badge-error' : 'badge-neutral'}">
+              <span class="material-symbols-outlined" style="font-size:0.85rem;">${appState.progressLockActive ? 'shield_lock' : 'lock_open'}</span>
+              ${appState.progressLockActive ? 'RULE 1 ENFORCED' : 'LOCK PAUSED'}
+            </span>
           </div>
+          <p class="page-subtitle">
+            Tamil Nadu State Board • <strong>${escapeHtml(appState.currentClass.name)} Mathematics (Volume 1 &amp; 2)</strong> • Academic Year 2024–25 • <span style="color:var(--secondary);font-weight:600;">வகுப்பு 12 கணிதம்</span>
+          </p>
+        </div>
+
+        <div class="flex-row" style="justify-content:flex-end;">
           <button type="button" id="btn-audit-history" class="btn btn-ghost">
             <span class="material-symbols-outlined" style="font-size:1rem;">history</span>
             <span>Audit History</span>
           </button>
-        </div>
-      </div>
-
-      <header class="flex-between">
-        <div>
-          <div class="flex-row">
-            <h1 class="page-title">${t('Teaching Progress & Assessment Lock', 'கற்பித்தல் முன்னேற்றம் & தேர்வுப் பூட்டு')}</h1>
-            <span class="badge badge-error"><span class="material-symbols-outlined" style="font-size:0.85rem;">shield_lock</span>RULE 1 ENFORCED</span>
-          </div>
-          <p class="page-subtitle">
-            Tamil Nadu State Board • <strong>Class 12 Mathematics (Volume 1 &amp; 2)</strong> • Academic Year 2024–25 • <span style="color:var(--secondary);font-weight:600;">வகுப்பு 12 கணிதம்</span>
-          </p>
-        </div>
-
-        <div class="flex-row">
           <button type="button" id="btn-batch-complete" class="btn btn-outline">
             <span class="material-symbols-outlined" style="font-size:1rem;">tune</span>
             <span>Mark Expanded Unit Taught</span>
@@ -126,7 +114,7 @@ export function renderTeachingProgressView() {
         <div class="card">
           <div class="flex-between text-xs muted"><strong>CURRENTLY TEACHING</strong><span class="material-symbols-outlined" style="color:var(--tertiary);">pending</span></div>
           <div class="flex-row" style="align-items:baseline;margin-top:0.6rem;"><span class="kpi-value" style="color:var(--tertiary);">${inProgressSubtopics}</span><span class="text-xs muted">Topics in progress</span></div>
-          <div class="progress-track" style="margin-top:0.75rem;"><div class="progress-fill" style="width:40%;background:var(--tertiary-container);"></div></div>
+          <div class="progress-track" style="margin-top:0.75rem;"><div class="progress-fill" style="width:${inProgressPct}%;background:var(--tertiary-container);"></div></div>
         </div>
         <div class="card">
           <div class="flex-between text-xs muted"><strong>EXAM-LOCKED TOPICS</strong><span class="material-symbols-outlined" style="color:var(--error);">lock</span></div>
@@ -143,7 +131,7 @@ export function renderTeachingProgressView() {
       <section class="flex-col" style="gap:0.85rem;">
         <div class="flex-between">
           <h2 class="section-title">Class 12 Mathematics Units &amp; Granular Subtopics</h2>
-          <span class="text-xs muted">Click status pills below to update teaching state in real-time</span>
+          <span class="text-xs muted">Use the status dropdowns below to update teaching state in real-time</span>
         </div>
 
         ${chapters
@@ -203,24 +191,17 @@ export function renderTeachingProgressView() {
                                 </td>
                                 <td><strong>${escapeHtml(sub.weightage)}</strong></td>
                                 <td>
-                                  <div class="segmented-pill" style="border-radius:0.55rem;">
-                                    ${['not_started', 'in_progress', 'completed', 'revised']
-                                      .map((st) => {
-                                        const labels = { not_started: 'Not Started', in_progress: 'In Progress', completed: 'Completed', revised: 'Revised' };
-                                        const active = sub.status === st;
-                                        const activeStyle = active
-                                          ? st === 'not_started'
-                                            ? 'background:#fff;color:var(--error);font-weight:700;'
-                                            : st === 'in_progress'
-                                            ? 'background:var(--tertiary-fixed);color:var(--on-tertiary-fixed);font-weight:700;'
-                                            : st === 'completed'
-                                            ? 'background:var(--secondary-fixed);color:var(--on-secondary-fixed);font-weight:700;'
-                                            : 'background:var(--primary-fixed);color:var(--on-primary-fixed);font-weight:700;'
-                                          : '';
-                                        return `<button type="button" class="segmented-btn" style="border-radius:0.4rem;font-size:0.69rem;padding:0.25rem 0.5rem;${activeStyle}" data-sub-chap="${chap.chapterId}" data-sub-id="${escapeHtml(sub.id)}" data-sub-status="${st}">${labels[st]}</button>`;
-                                      })
-                                      .join('')}
-                                  </div>
+                                  <select
+                                    class="select status-select status-${escapeHtml(sub.status)}"
+                                    data-sub-chap="${chap.chapterId}"
+                                    data-sub-id="${escapeHtml(sub.id)}"
+                                    aria-label="Teaching status for ${escapeHtml(sub.id)}"
+                                  >
+                                    <option value="not_started" ${sub.status === 'not_started' ? 'selected' : ''}>Not Started</option>
+                                    <option value="in_progress" ${sub.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                                    <option value="completed" ${sub.status === 'completed' ? 'selected' : ''}>Completed</option>
+                                    <option value="revised" ${sub.status === 'revised' ? 'selected' : ''}>Revised</option>
+                                  </select>
                                 </td>
                                 <td>
                                   ${
@@ -245,6 +226,38 @@ export function renderTeachingProgressView() {
           })
           .join('')}
       </section>
+
+      ${
+        tpAuditModalOpen
+          ? `
+        <div id="tp-audit-backdrop" class="modal-backdrop">
+          <div class="modal-card">
+            <div class="flex-between" style="padding-bottom:0.65rem;border-bottom:1px solid var(--surface-container);">
+              <div class="flex-row">
+                <span class="material-symbols-outlined" style="color:var(--primary);">history</span>
+                <h2 style="margin:0;font-size:1rem;font-weight:700;">Syllabus Lock &amp; Verification Audit Trail</h2>
+              </div>
+              <button type="button" id="btn-close-tp-audit" class="btn-ghost" style="padding:0.25rem;"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="flex-col" style="margin-top:0.85rem;gap:0.6rem;">
+              <div class="soft-panel flex-between text-xs">
+                <div><strong>Master Lock Status</strong><div class="muted">Enforced for ${escapeHtml(appState.currentClass.name)}</div></div>
+                <span class="badge ${appState.progressLockActive ? 'badge-secondary' : 'badge-error'}">${appState.progressLockActive ? 'ACTIVE' : 'PAUSED'}</span>
+              </div>
+              <div class="soft-panel text-xs">
+                <strong>24 Oct 2024 • HOD Mathematics</strong>
+                <div class="muted" style="margin-top:0.2rem;">Verified Chapters 1–3 &amp; 4.1–4.2 under TN-SCERT-2024-V2.1 baseline.</div>
+              </div>
+              <div class="soft-panel text-xs">
+                <strong>18 Oct 2024 • K. Meenakshi Sundaram</strong>
+                <div class="muted" style="margin-top:0.2rem;">Marked Subtopic 3.3 (Descartes Rule of Signs) as Completed.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+          : ''
+      }
     </div>
   `;
 }
@@ -259,7 +272,18 @@ function updateChapterRollup(chap) {
 
 export function bindTeachingProgressEvents() {
   document.getElementById('btn-audit-history')?.addEventListener('click', () => {
-    showToast('Displaying full syllabus audit history', 'info');
+    tpAuditModalOpen = true;
+    triggerRender();
+  });
+  document.getElementById('btn-close-tp-audit')?.addEventListener('click', () => {
+    tpAuditModalOpen = false;
+    triggerRender();
+  });
+  document.getElementById('tp-audit-backdrop')?.addEventListener('click', (e) => {
+    if (e.target.id === 'tp-audit-backdrop') {
+      tpAuditModalOpen = false;
+      triggerRender();
+    }
   });
 
   document.getElementById('btn-toggle-master-lock')?.addEventListener('click', async () => {
@@ -320,9 +344,11 @@ export function bindTeachingProgressEvents() {
     const csv = rows.map((r) => r.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
+    link.href = url;
     link.download = `tn-syllabus-progress-${appState.currentClass.id}.csv`;
     link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     showToast('Curricular Syllabus Exported as CSV', 'success');
   });
 
@@ -334,11 +360,11 @@ export function bindTeachingProgressEvents() {
     });
   });
 
-  document.querySelectorAll('[data-sub-id]').forEach((btn) => {
-    btn.addEventListener('click', async () => {
-      const chapId = Number(btn.getAttribute('data-sub-chap'));
-      const subId = btn.getAttribute('data-sub-id');
-      const newStatus = btn.getAttribute('data-sub-status');
+  document.querySelectorAll('[data-sub-id]').forEach((selectEl) => {
+    selectEl.addEventListener('change', async (e) => {
+      const chapId = Number(selectEl.getAttribute('data-sub-chap'));
+      const subId = selectEl.getAttribute('data-sub-id');
+      const newStatus = e.target.value;
       const chap = appState.chapters.find((c) => c.chapterId === chapId);
       const sub = chap?.subtopics.find((s) => s.id === subId);
       if (!sub) return;

@@ -16,30 +16,28 @@ export function renderDashboardView() {
     return true;
   });
 
+  const totalTopics = appState.chapters.reduce((acc, c) => acc + c.subtopics.length, 0);
+  const completedTopics = appState.chapters.reduce(
+    (acc, c) => acc + c.subtopics.filter((s) => s.status === 'completed' || s.status === 'revised').length,
+    0
+  );
+  const revisedTopics = appState.chapters.reduce(
+    (acc, c) => acc + c.subtopics.filter((s) => s.status === 'revised').length,
+    0
+  );
+  const coveragePct = totalTopics ? Math.round((completedTopics / totalTopics) * 100) : 0;
+  const ringCircumference = 119.38;
+  const ringOffset = (ringCircumference * (1 - coveragePct / 100)).toFixed(1);
+
   return `
     <div class="page-container">
-      <div class="flex-between">
-        <div class="flex-row text-xs muted" style="gap:0.35rem;">
-          <span>${t('Home', 'முகப்பு')}</span>
-          <span class="material-symbols-outlined" style="font-size:0.9rem;">chevron_right</span>
-          <span>${escapeHtml(appState.currentClass.name)}</span>
-          <span class="material-symbols-outlined" style="font-size:0.9rem;">chevron_right</span>
-          <strong style="color:var(--primary);">${t('Teacher Command Center', 'ஆசிரியர் கட்டுப்பாட்டு மையம்')}</strong>
-        </div>
-        <div class="badge badge-neutral" style="padding:0.35rem 0.8rem;">
-          <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:var(--secondary);"></span>
-          <strong>${t('Curricular State:', 'பாடத்திட்ட நிலை:')}</strong>
-          <span>${t('Term 2 Active (HSC 2024-25 Rules Engine)', 'பருவம் 2 செயல்பாட்டில் (HSC 2024–25)')}</span>
-        </div>
-      </div>
-
       <section class="card card-lg" style="position:relative;overflow:hidden;">
-        <div class="flex-between" style="gap:1.25rem;">
-          <div style="max-width:44rem;">
-            <div class="flex-row" style="margin-bottom:0.5rem;">
+        <div class="flex-between" style="gap:1.25rem;align-items:flex-start;">
+          <div style="max-width:42rem;">
+            <div class="flex-row" style="margin-bottom:0.55rem;">
               <span class="badge badge-primary">Live Section ${escapeHtml(appState.currentClass.id)}</span>
-              <span class="badge badge-neutral font-mono">EM / TM Dual Stream</span>
-              <span class="badge badge-secondary">TN-SCERT Aligned</span>
+              <span class="badge badge-neutral font-mono">${escapeHtml(appState.currentClass.medium)}</span>
+              <span class="badge badge-secondary">${t('Term 2 Active • TN-SCERT', 'பருவம் 2 • TN-SCERT')}</span>
             </div>
             <h1 class="page-title">
               ${t(`Teacher Command Center — ${appState.currentClass.name} Mathematics`, `ஆசிரியர் கட்டளை மையம் — ${appState.currentClass.name} கணிதம்`)}
@@ -49,7 +47,7 @@ export function renderDashboardView() {
             </p>
           </div>
 
-          <div class="flex-row">
+          <div class="flex-row" style="justify-content:flex-end;">
             <button type="button" class="btn btn-primary" data-dash-go="paper-generator">
               <span class="material-symbols-outlined" style="font-size:1.05rem;">auto_awesome</span>
               <span>+ Quick Generate Test</span>
@@ -72,21 +70,21 @@ export function renderDashboardView() {
             <div>
               <div class="text-xs muted" style="font-weight:600;">${t('Syllabus Coverage', 'பாடத்திட்ட நிறைவு')}</div>
               <div class="flex-row" style="align-items:baseline;margin-top:0.35rem;">
-                <span class="kpi-value">68%</span>
-                <span class="text-xs" style="color:var(--secondary);font-weight:700;">14/21 Topics</span>
+                <span class="kpi-value">${coveragePct}%</span>
+                <span class="text-xs" style="color:var(--secondary);font-weight:700;">${completedTopics}/${totalTopics} Topics</span>
               </div>
             </div>
             <div style="position:relative;width:3.4rem;height:3.4rem;display:flex;align-items:center;justify-content:center;">
               <svg width="52" height="52" viewBox="0 0 48 48" style="transform:rotate(-90deg);">
                 <circle cx="24" cy="24" r="19" fill="none" stroke="var(--surface-container-high)" stroke-width="4.5"></circle>
-                <circle cx="24" cy="24" r="19" fill="none" stroke="var(--secondary)" stroke-width="4.5" stroke-dasharray="119.38" stroke-dashoffset="38.2" stroke-linecap="round"></circle>
+                <circle cx="24" cy="24" r="19" fill="none" stroke="var(--secondary)" stroke-width="4.5" stroke-dasharray="${ringCircumference}" stroke-dashoffset="${ringOffset}" stroke-linecap="round"></circle>
               </svg>
               <span class="material-symbols-outlined fill" style="position:absolute;color:var(--secondary);font-size:1rem;">verified</span>
             </div>
           </div>
           <div class="soft-panel" style="padding:0.6rem 0.75rem;margin-top:0.5rem;">
             <div class="flex-between text-xs muted">
-              <span>14 Completed • 4 Revised</span>
+              <span>${completedTopics} Taught • ${revisedTopics} Revised</span>
               <span class="font-mono" style="color:var(--secondary);font-weight:700;">Vol 1 &amp; 2</span>
             </div>
             <div class="badge ${appState.progressLockActive ? 'badge-error' : 'badge-neutral'}" style="margin-top:0.4rem;">
@@ -146,7 +144,7 @@ export function renderDashboardView() {
             <div>
               <div class="text-xs muted" style="font-weight:600;">${t('Pending AI Evaluations', 'நிலுவையில் உள்ள AI மதிப்பீடுகள்')}</div>
               <div class="flex-row" style="align-items:baseline;margin-top:0.35rem;">
-                <span class="kpi-value" style="color:var(--primary);">14</span>
+                <span class="kpi-value" style="color:var(--primary);">${appState.pendingEvalCount}</span>
                 <span class="badge badge-primary">Review Queue</span>
               </div>
             </div>
@@ -240,11 +238,14 @@ export function renderDashboardView() {
             <h2 class="section-title">Curricular Mastery &amp; Weakness Matrix</h2>
             <p class="text-xs muted" style="margin:0.2rem 0 0;">Live aggregate score metrics derived from Unit Tests 1 &amp; 2, Slip Tests, and Daily Problem Drills.</p>
           </div>
-          <div class="segmented-pill">
-            <button type="button" class="segmented-btn ${appState.dashboardTopicFilter === 'all' ? 'active-white' : ''}" data-topic-filter="all">All Topics</button>
-            <button type="button" class="segmented-btn ${appState.dashboardTopicFilter === 'vol1' ? 'active-white' : ''}" data-topic-filter="vol1">Vol 1</button>
-            <button type="button" class="segmented-btn ${appState.dashboardTopicFilter === 'vol2' ? 'active-white' : ''}" data-topic-filter="vol2">Vol 2</button>
-            <button type="button" class="segmented-btn ${appState.dashboardTopicFilter === 'attention' ? 'active-white' : ''}" data-topic-filter="attention" style="color:var(--error);">Needing Attention</button>
+          <div class="flex-row" style="gap:0.5rem;">
+            <label for="dash-topic-filter" class="text-xs muted" style="font-weight:600;">${t('Filter:', 'வடிகட்டி:')}</label>
+            <select id="dash-topic-filter" class="select" style="width:auto;min-width:12rem;">
+              <option value="all" ${appState.dashboardTopicFilter === 'all' ? 'selected' : ''}>All Topics</option>
+              <option value="vol1" ${appState.dashboardTopicFilter === 'vol1' ? 'selected' : ''}>Volume 1 Chapters</option>
+              <option value="vol2" ${appState.dashboardTopicFilter === 'vol2' ? 'selected' : ''}>Volume 2 Chapters</option>
+              <option value="attention" ${appState.dashboardTopicFilter === 'attention' ? 'selected' : ''}>Needing Attention</option>
+            </select>
           </div>
         </div>
 
@@ -309,7 +310,7 @@ export function bindDashboardEvents() {
 
   document.querySelectorAll('[data-accept-rec]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      showToast('Targeted Reassessment Generated & Queued for Class 12-A!', 'success');
+      showToast(`Targeted Reassessment Generated & Queued for ${appState.currentClass.name}!`, 'success');
       setActiveTab('remedial-and-homework');
     });
   });
@@ -323,11 +324,9 @@ export function bindDashboardEvents() {
     });
   });
 
-  document.querySelectorAll('[data-topic-filter]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      appState.dashboardTopicFilter = btn.getAttribute('data-topic-filter');
-      triggerRender();
-    });
+  document.getElementById('dash-topic-filter')?.addEventListener('change', (e) => {
+    appState.dashboardTopicFilter = e.target.value;
+    triggerRender();
   });
 
   document.querySelectorAll('[data-matrix-action]').forEach((btn) => {

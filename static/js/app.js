@@ -82,11 +82,20 @@ window.addEventListener('keydown', (e) => {
       triggerRender();
     }
   } else if (e.key === 'Escape') {
-    if (appState.searchModalOpen || appState.notificationsOpen) {
+    if (appState.searchModalOpen || appState.notificationsOpen || appState.headerMenuOpen) {
       appState.searchModalOpen = false;
       appState.notificationsOpen = false;
+      appState.headerMenuOpen = null;
       triggerRender();
     }
+  }
+});
+
+document.addEventListener('click', (e) => {
+  if ((appState.notificationsOpen || appState.headerMenuOpen) && !e.target.closest('[data-header-dropdown]')) {
+    appState.notificationsOpen = false;
+    appState.headerMenuOpen = null;
+    triggerRender();
   }
 });
 

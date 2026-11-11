@@ -1,6 +1,30 @@
 import { apiClient } from '../api/client.js';
 import { appState, escapeHtml, showToast, t, triggerRender } from '../state.js';
 
+const QUESTION_VARIANTS = {
+  1: {
+    textEn: 'If A is an orthogonal matrix of order 3x3, then |A| is equal to:',
+    textTa: 'A என்பது 3x3 வரிசையுடைய செங்குத்து அணி எனில் |A| என்பது:',
+    options: ['0', '+-1', '3', '9'],
+    answer: '+-1'
+  },
+  4: {
+    textEn: 'Find the rank of the matrix [[1, 2, -1], [3, 6, -3]].',
+    textTa: '[[1, 2, -1], [3, 6, -3]] என்ற அணியின் தரத்தைக் காண்க.',
+    answer: 'Rank = 1'
+  },
+  5: {
+    textEn: 'Find the modulus and principal argument of -sqrt(3) + i.',
+    textTa: '-sqrt(3) + i -ன் மட்டு மதிப்பு மற்றும் முதன்மை வீச்சு காண்க.',
+    answer: 'r = 2, theta = 5pi/6'
+  },
+  8: {
+    textEn: "Solve: 3x + 2y = 12, x - 4y = -10 using Cramer's Rule.",
+    textTa: 'கிரேமரின் விதியைப் பயன்படுத்தித் தீர்க்க: 3x + 2y = 12, x - 4y = -10.',
+    answer: 'x = 2, y = 3'
+  }
+};
+
 export function renderPaperGeneratorView() {
   const cfg = appState.paperConfig;
   const paper = appState.generatedPaper;
@@ -8,7 +32,7 @@ export function renderPaperGeneratorView() {
 
   return `
     <div class="page-container">
-      <header class="flex-between">
+      <header class="flex-between" style="align-items:flex-start;">
         <div>
           <div class="flex-row">
             <h1 class="page-title">${t('AI Question Paper Generator', 'AI வினாத்தாள் உருவாக்கி')}</h1>
@@ -20,7 +44,7 @@ export function renderPaperGeneratorView() {
         ${
           paper
             ? `
-          <div class="flex-row no-print">
+          <div class="flex-row no-print" style="justify-content:flex-end;">
             <button type="button" id="btn-print-paper" class="btn btn-surface">
               <span class="material-symbols-outlined" style="font-size:1rem;">print</span>
               <span>${t('Print / Export PDF', 'அச்சிடு / PDF ஏற்றுமதி')}</span>
@@ -88,12 +112,12 @@ export function renderPaperGeneratorView() {
           </div>
 
           <div>
-            <label class="field-label">${t('Output Language', 'வெளியீட்டு மொழி')}</label>
-            <div class="segmented-pill" style="width:100%;">
-              <button type="button" class="segmented-btn ${cfg.language === 'bilingual' ? 'active-white' : ''}" style="flex:1;" data-pg-lang="bilingual">Bilingual</button>
-              <button type="button" class="segmented-btn ${cfg.language === 'en' ? 'active-white' : ''}" style="flex:1;" data-pg-lang="en">English</button>
-              <button type="button" class="segmented-btn ${cfg.language === 'ta' ? 'active-white' : ''}" style="flex:1;" data-pg-lang="ta">தமிழ்</button>
-            </div>
+            <label class="field-label" for="pg-language">${t('Output Language', 'வெளியீட்டு மொழி')}</label>
+            <select id="pg-language" class="select">
+              <option value="bilingual" ${cfg.language === 'bilingual' ? 'selected' : ''}>Bilingual (English &amp; தமிழ்)</option>
+              <option value="en" ${cfg.language === 'en' ? 'selected' : ''}>English Only</option>
+              <option value="ta" ${cfg.language === 'ta' ? 'selected' : ''}>தமிழ் Only (Tamil Medium)</option>
+            </select>
           </div>
 
           <div>
@@ -193,8 +217,9 @@ export function renderPaperGeneratorView() {
                         <span class="text-xs muted" style="font-style:italic;">${escapeHtml(sec.instructions)}</span>
                       </div>
                       ${sec.questions
-                        .map(
-                          (q) => `
+                        .map((q) => {
+                          const isLocked = appState.lockedPaperQuestions.includes(q.no);
+                          return `
                         <div style="padding-left:0.4rem;">
                           <div class="flex-between" style="align-items:flex-start;flex-wrap:nowrap;">
                             <div class="flex-row" style="align-items:flex-start;flex-wrap:nowrap;flex:1;">
@@ -222,16 +247,16 @@ export function renderPaperGeneratorView() {
                             <strong class="text-xs">[${q.marks}]</strong>
                           </div>
                           <div class="flex-row no-print" style="padding-left:1.1rem;margin-top:0.25rem;font-size:0.7rem;">
-                            <button type="button" class="btn-ghost" style="border:none;color:var(--primary);padding:0.15rem 0.3rem;" data-swap-q="${q.no}">
+                            <button type="button" class="btn-ghost" style="border:none;color:${isLocked ? 'var(--outline)' : 'var(--primary)'};padding:0.15rem 0.3rem;" data-swap-q="${q.no}" ${isLocked ? 'disabled' : ''}>
                               <span class="material-symbols-outlined" style="font-size:0.85rem;">sync</span> Swap variant
                             </button>
-                            <button type="button" class="btn-ghost" style="border:none;color:var(--secondary);padding:0.15rem 0.3rem;" data-lock-q="${q.no}">
-                              <span class="material-symbols-outlined" style="font-size:0.85rem;">lock</span> Lock Question
+                            <button type="button" class="btn-ghost" style="border:none;color:${isLocked ? 'var(--error)' : 'var(--secondary)'};padding:0.15rem 0.3rem;font-weight:${isLocked ? '700' : '600'};" data-lock-q="${q.no}">
+                              <span class="material-symbols-outlined" style="font-size:0.85rem;">${isLocked ? 'lock' : 'lock_open'}</span> ${isLocked ? 'Locked (Unlock)' : 'Lock Question'}
                             </button>
                           </div>
                         </div>
-                      `
-                        )
+                      `;
+                        })
                         .join('')}
                     </div>
                   `
@@ -245,24 +270,27 @@ export function renderPaperGeneratorView() {
                     <span class="material-symbols-outlined fill" style="font-size:1rem;">verified</span>
                     <span>Official Stepwise Scoring Rubrics for Evaluators according to DGE TN Guidelines.</span>
                   </div>
-                  <div class="card">
-                    <div class="flex-between text-xs" style="font-weight:700;color:var(--primary);margin-bottom:0.45rem;">
-                      <span>Q.6 Compulsory Problem: Integer Polynomial Root</span>
-                      <span>[2 Marks]</span>
+                  ${paper.sections
+                    .map(
+                      (sec) => `
+                    <div class="card" style="box-shadow:none;">
+                      <div class="text-xs" style="font-weight:700;color:var(--primary);margin-bottom:0.5rem;text-transform:uppercase;">${escapeHtml(sec.name)}</div>
+                      <div class="flex-col" style="gap:0.4rem;">
+                        ${sec.questions
+                          .map(
+                            (q) => `
+                          <div class="flex-between text-xs" style="padding:0.35rem 0;border-bottom:1px solid var(--surface-container-low);gap:0.75rem;">
+                            <span style="flex:1;"><strong>Q.${q.no}</strong> ${escapeHtml(q.chapter || q.type)} — ${escapeHtml(q.answer || 'Stepwise solution key verified')}</span>
+                            <strong class="font-mono" style="color:var(--secondary);">${q.marks} M</strong>
+                          </div>
+                        `
+                          )
+                          .join('')}
+                      </div>
                     </div>
-                    <div class="flex-between text-xs"><span>• Formulation of conjugate roots: sqrt(5) ± sqrt(3), -sqrt(5) ± sqrt(3)</span><strong class="font-mono">1.0 Mark</strong></div>
-                    <div class="flex-between text-xs" style="margin-top:0.25rem;"><span>• Expansion to polynomial: x^4 - 16x^2 + 4 = 0</span><strong class="font-mono">1.0 Mark</strong></div>
-                  </div>
-                  <div class="card">
-                    <div class="flex-between text-xs" style="font-weight:700;color:var(--primary);margin-bottom:0.45rem;">
-                      <span>Q.9(a) Long Answer: Orthogonal Matrix Inverse</span>
-                      <span>[5 Marks]</span>
-                    </div>
-                    <div class="flex-between text-xs"><span>• Evaluation of determinant |A| = -729 != 0</span><strong class="font-mono">1.0 Mark</strong></div>
-                    <div class="flex-between text-xs" style="margin-top:0.25rem;"><span>• Transpose computation A^T</span><strong class="font-mono">1.0 Mark</strong></div>
-                    <div class="flex-between text-xs" style="margin-top:0.25rem;"><span>• Product calculation A * A^T = 81 I_3</span><strong class="font-mono">1.5 Marks</strong></div>
-                    <div class="flex-between text-xs" style="margin-top:0.25rem;"><span>• Conclusion A^-1 = (1/9) A^T and final matrix</span><strong class="font-mono">1.5 Marks</strong></div>
-                  </div>
+                  `
+                    )
+                    .join('')}
                 </div>
               `
               }
@@ -288,11 +316,9 @@ export function bindPaperGeneratorEvents() {
     if (label) label.textContent = `${appState.paperConfig.bookBackRatio}%`;
   });
 
-  document.querySelectorAll('[data-pg-lang]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      appState.paperConfig.language = btn.getAttribute('data-pg-lang');
-      triggerRender();
-    });
+  document.getElementById('pg-language')?.addEventListener('change', (e) => {
+    appState.paperConfig.language = e.target.value;
+    triggerRender();
   });
 
   const executeGenerate = async () => {
@@ -338,12 +364,59 @@ export function bindPaperGeneratorEvents() {
 
   document.querySelectorAll('[data-swap-q]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      showToast(`Regenerated equivalent variant for Q.${btn.getAttribute('data-swap-q')}`, 'success');
+      const qNo = Number(btn.getAttribute('data-swap-q'));
+      if (appState.lockedPaperQuestions.includes(qNo)) {
+        showToast(`Q.${qNo} is locked and cannot be swapped.`, 'warning');
+        return;
+      }
+      const paper = appState.generatedPaper;
+      if (paper?.sections) {
+        for (const sec of paper.sections) {
+          const targetQ = sec.questions.find((q) => q.no === qNo);
+          if (targetQ) {
+            const alt = QUESTION_VARIANTS[qNo];
+            if (alt && !targetQ._swapped) {
+              targetQ._orig = { textEn: targetQ.textEn, textTa: targetQ.textTa, options: targetQ.options, answer: targetQ.answer };
+              targetQ.textEn = alt.textEn;
+              targetQ.textTa = alt.textTa;
+              if (alt.options) targetQ.options = alt.options;
+              if (alt.answer) targetQ.answer = alt.answer;
+              targetQ._swapped = true;
+            } else if (targetQ._orig) {
+              targetQ.textEn = targetQ._orig.textEn;
+              targetQ.textTa = targetQ._orig.textTa;
+              targetQ.options = targetQ._orig.options;
+              targetQ.answer = targetQ._orig.answer;
+              targetQ._swapped = false;
+            } else {
+              const bankPool = appState.questions.filter((bq) => bq.marks === targetQ.marks && bq.questionEn !== targetQ.textEn);
+              if (bankPool.length > 0) {
+                const idx = (appState.paperVariantOffsets[qNo] || 0) % bankPool.length;
+                appState.paperVariantOffsets[qNo] = idx + 1;
+                targetQ.textEn = bankPool[idx].questionEn;
+                targetQ.textTa = bankPool[idx].questionTa;
+                targetQ.answer = bankPool[idx].answerKey;
+              }
+            }
+            break;
+          }
+        }
+      }
+      showToast(`Regenerated equivalent variant for Q.${qNo}`, 'success');
+      triggerRender();
     });
   });
   document.querySelectorAll('[data-lock-q]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      showToast(`Q.${btn.getAttribute('data-lock-q')} locked against regeneration`, 'info');
+      const qNo = Number(btn.getAttribute('data-lock-q'));
+      if (appState.lockedPaperQuestions.includes(qNo)) {
+        appState.lockedPaperQuestions = appState.lockedPaperQuestions.filter((n) => n !== qNo);
+        showToast(`Q.${qNo} unlocked for variant swapping`, 'info');
+      } else {
+        appState.lockedPaperQuestions.push(qNo);
+        showToast(`Q.${qNo} locked against regeneration`, 'info');
+      }
+      triggerRender();
     });
   });
 }

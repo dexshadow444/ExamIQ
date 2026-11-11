@@ -15,6 +15,23 @@ import { API_ENDPOINTS } from './api/endpoints.js';
 
 const clone = (obj) => JSON.parse(JSON.stringify(obj));
 
+export const TAB_GROUP_MAP = {
+  dashboard: null,
+  'teaching-progress': 'curriculum',
+  'resource-hub': 'curriculum',
+  'question-bank': 'curriculum',
+  'paper-generator': 'exams',
+  'tests-and-assessments': 'exams',
+  'answer-evaluation': 'exams',
+  'marks-management': 'exams',
+  'student-insights': 'intelligence',
+  'remedial-and-homework': 'intelligence',
+  'vocational-module': 'intelligence',
+  'reports-center': 'system',
+  'admin-and-security': 'system',
+  'api-explorer': 'system'
+};
+
 export const appState = {
   isLoggedIn: false,
   currentRole: 'admin',
@@ -27,8 +44,18 @@ export const appState = {
   apiMode: getApiMode(),
   searchModalOpen: false,
   notificationsOpen: false,
+  headerMenuOpen: null,
   mobileSidebarOpen: false,
+  sidebarOpenGroups: {
+    curriculum: true,
+    exams: false,
+    intelligence: false,
+    system: false
+  },
   toasts: [],
+  pendingEvalCount: 12,
+  lockedPaperQuestions: [],
+  paperVariantOffsets: {},
 
   // Persistent domain state across views
   notifications: [
@@ -124,6 +151,7 @@ export const triggerRender = () => {
 
 export const setLanguage = (lang) => {
   appState.language = lang === 'ta' ? 'ta' : 'en';
+  appState.headerMenuOpen = null;
   document.documentElement.lang = appState.language;
   localStorage.setItem('app-language', appState.language);
   showToast(lang === 'ta' ? 'மொழி தமிழாக மாற்றப்பட்டது' : 'Language switched to English', 'info');
@@ -133,6 +161,7 @@ export const setLanguage = (lang) => {
 export const switchApiMode = (mode) => {
   setApiMode(mode);
   appState.apiMode = mode;
+  appState.headerMenuOpen = null;
   showToast(`Switched API mode to: ${mode.toUpperCase()}`, 'info');
   triggerRender();
 };
@@ -141,16 +170,21 @@ export const setActiveTab = (tabId) => {
   appState.activeTab = tabId;
   appState.mobileSidebarOpen = false;
   appState.notificationsOpen = false;
+  appState.headerMenuOpen = null;
+  const groupKey = TAB_GROUP_MAP[tabId];
+  if (groupKey) {
+    appState.sidebarOpenGroups[groupKey] = true;
+  }
   triggerRender();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 export const showToast = (message, type = 'success', duration = 3500) => {
-  const id = Date.now() + Math.random();
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
   appState.toasts.push({ id, message, type });
   renderToasts();
   setTimeout(() => {
-    appState.toasts = appState.toasts.filter((t) => t.id !== id);
+    appState.toasts = appState.toasts.filter((t) => String(t.id) !== String(id));
     renderToasts();
   }, duration);
 };
@@ -172,7 +206,7 @@ export const renderToasts = () => {
           <span class="material-symbols-outlined" style="font-size:1.1rem;">${iconNames[t.type] || 'info'}</span>
           <span>${escapeHtml(t.message)}</span>
         </div>
-        <button type="button" data-dismiss-toast="${t.id}" style="border:none;background:transparent;color:inherit;opacity:0.8;padding:0;display:flex;">
+        <button type="button" data-dismiss-toast="${escapeHtml(t.id)}" style="border:none;background:transparent;color:inherit;opacity:0.8;padding:0;display:flex;">
           <span class="material-symbols-outlined" style="font-size:1rem;">close</span>
         </button>
       </div>
@@ -182,8 +216,8 @@ export const renderToasts = () => {
 
   root.querySelectorAll('[data-dismiss-toast]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const id = Number(btn.getAttribute('data-dismiss-toast'));
-      appState.toasts = appState.toasts.filter((t) => t.id !== id);
+      const id = btn.getAttribute('data-dismiss-toast');
+      appState.toasts = appState.toasts.filter((t) => String(t.id) !== String(id));
       renderToasts();
     });
   });

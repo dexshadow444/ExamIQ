@@ -10,10 +10,12 @@ const CONCEPTS = [
 
 export function renderRemedialLearningView() {
   const drill = appState.generatedDrill;
+  const matchCount = appState.remedialConcept.match(/\((\d+)\s+students?\)/i);
+  const flaggedCount = matchCount ? matchCount[1] : '18';
 
   return `
     <div class="page-container">
-      <header class="flex-between">
+      <header class="flex-between" style="align-items:flex-start;">
         <div>
           <div class="flex-row">
             <h1 class="page-title">${t('AI Personalized Remedial Learning & Homework', 'பரிகாரக் கற்றல் & வீட்டுப்பாட மேலாண்மை')}</h1>
@@ -42,7 +44,7 @@ export function renderRemedialLearningView() {
           </select>
         </div>
         <div class="flex-row">
-          <span class="badge badge-tertiary" style="padding:0.45rem 0.75rem;">Cohort: 18 Students Flagged</span>
+          <span class="badge badge-tertiary" style="padding:0.45rem 0.75rem;">Cohort: ${escapeHtml(flaggedCount)} Students Flagged</span>
           <span class="badge badge-secondary" style="padding:0.45rem 0.75rem;">Pacing: Period 3 Tomorrow</span>
         </div>
       </div>
@@ -122,6 +124,7 @@ export function renderRemedialLearningView() {
 export function bindRemedialLearningEvents() {
   document.getElementById('remedial-concept-select')?.addEventListener('change', (e) => {
     appState.remedialConcept = e.target.value;
+    triggerRender();
   });
 
   const runGenerate = async () => {

@@ -23,7 +23,7 @@ export function renderAnswerEvaluationView() {
         </div>
 
         <div class="flex-row">
-          <span class="badge badge-neutral font-mono" style="padding:0.45rem 0.75rem;">Queue: 12 Scans Pending</span>
+          <span class="badge badge-neutral font-mono" style="padding:0.45rem 0.75rem;">Queue: ${appState.pendingEvalCount} Scans Pending</span>
           <button type="button" id="btn-upload-scans" class="btn btn-primary">
             <span class="material-symbols-outlined" style="font-size:1rem;">upload_file</span>
             <span>${t('Upload Batch Scans', 'விடைத்தாள் படங்களைப் பதிவேற்று')}</span>
@@ -170,8 +170,8 @@ export function bindAnswerEvaluationEvents() {
     showToast('Answer sheets uploaded from optical high-speed scanner', 'success');
   });
   document.getElementById('btn-zoom-scan')?.addEventListener('click', () => {
-    evalState.zoomed = true;
-    showToast('Zooming into handwriting region', 'info');
+    evalState.zoomed = !evalState.zoomed;
+    showToast(evalState.zoomed ? 'Zoomed into handwriting region' : 'Zoom reset', 'info');
     triggerRender();
   });
   document.getElementById('btn-reset-scan')?.addEventListener('click', () => {
@@ -180,7 +180,10 @@ export function bindAnswerEvaluationEvents() {
     triggerRender();
   });
   document.getElementById('eval-teacher-score')?.addEventListener('input', (e) => {
-    evalState.teacherScore = Number(e.target.value);
+    const sample = appState.evaluations[0];
+    const max = sample?.maxMarks || 5;
+    const raw = Number(e.target.value);
+    evalState.teacherScore = Number.isNaN(raw) ? 0 : Math.min(max, Math.max(0, raw));
   });
   document.getElementById('eval-teacher-notes')?.addEventListener('input', (e) => {
     evalState.teacherNotes = e.target.value;
@@ -190,13 +193,20 @@ export function bindAnswerEvaluationEvents() {
   });
   document.getElementById('btn-approve-eval')?.addEventListener('click', async () => {
     const sample = appState.evaluations[0];
+    const score = Math.min(sample.maxMarks, Math.max(0, Number(evalState.teacherScore) || 0));
+    evalState.teacherScore = score;
     await apiClient.approveEvaluation(sample.evaluationId, {
-      finalApprovedMarks: evalState.teacherScore,
+      finalApprovedMarks: score,
       teacherAdjustmentNotes: evalState.teacherNotes,
       teacherId: 'T-TN-48291'
     });
+    if (!evalState.signedOff && appState.pendingEvalCount > 0) {
+      appState.pendingEvalCount -= 1;
+    }
+    sample.status = 'Approved';
+    sample.teacherApprovedMarks = score;
     evalState.signedOff = true;
-    showToast(`Evaluation for ${sample.studentName} approved with ${evalState.teacherScore} / ${sample.maxMarks} Marks!`, 'success');
+    showToast(`Evaluation for ${sample.studentName} approved with ${score} / ${sample.maxMarks} Marks!`, 'success');
     triggerRender();
   });
 }

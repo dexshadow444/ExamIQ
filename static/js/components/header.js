@@ -2,6 +2,7 @@ import { SCHOOL_DATA } from '../data/mockData.js';
 import {
   appState,
   escapeHtml,
+  setActiveTab,
   setLanguage,
   switchApiMode,
   t,
@@ -37,53 +38,83 @@ export function renderHeader() {
       </div>
 
       <div class="header-actions">
-        <div class="badge badge-neutral hide-sm" style="padding:0.35rem 0.7rem;">
-          <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:var(--secondary);display:inline-block;"></span>
-          <span>${escapeHtml(appState.currentClass.name)} • ${escapeHtml(appState.currentClass.medium)}</span>
+        <div class="header-dropdown-wrap hide-sm" data-header-dropdown>
+          <button
+            type="button"
+            id="btn-header-mode"
+            class="header-dropdown-btn"
+            aria-expanded="${appState.headerMenuOpen === 'mode' ? 'true' : 'false'}"
+          >
+            <span class="status-dot" style="background:${appState.apiMode === 'live' ? 'var(--secondary)' : 'var(--primary)'};"></span>
+            <span>${appState.apiMode === 'live' ? t('Live API', 'நேரடி API') : t('Mock Data', 'மாதிரி தரவு')}</span>
+            <span class="material-symbols-outlined" style="font-size:1rem;">expand_more</span>
+          </button>
+
+          ${
+            appState.headerMenuOpen === 'mode'
+              ? `
+              <div class="popover-menu header-menu-sm">
+                <div class="menu-section-title">${t('Data Source Mode', 'தரவு மூல முறை')}</div>
+                <button type="button" id="btn-mode-mock" class="menu-option ${appState.apiMode === 'mock' ? 'active' : ''}">
+                  <span class="status-dot" style="background:var(--primary);"></span>
+                  <div style="flex:1;">
+                    <div style="font-weight:700;">${t('Mock Data', 'மாதிரி தரவு')}</div>
+                    <div class="text-xs muted">In-browser simulation</div>
+                  </div>
+                  ${appState.apiMode === 'mock' ? '<span class="material-symbols-outlined" style="font-size:1rem;color:var(--primary);">check</span>' : ''}
+                </button>
+                <button type="button" id="btn-mode-live" class="menu-option ${appState.apiMode === 'live' ? 'active' : ''}">
+                  <span class="status-dot" style="background:var(--secondary);"></span>
+                  <div style="flex:1;">
+                    <div style="font-weight:700;">${t('Live API', 'நேரடி API')}</div>
+                    <div class="text-xs muted">Connect to backend server</div>
+                  </div>
+                  ${appState.apiMode === 'live' ? '<span class="material-symbols-outlined" style="font-size:1rem;color:var(--secondary);">check</span>' : ''}
+                </button>
+              </div>
+            `
+              : ''
+          }
         </div>
 
-        <div class="segmented-pill hide-sm">
+        <div class="header-dropdown-wrap" data-header-dropdown>
           <button
             type="button"
-            id="btn-mode-mock"
-            class="segmented-btn ${appState.apiMode === 'mock' ? 'active-primary' : ''}"
-            title="Uses in-browser high fidelity mock simulation"
+            id="btn-header-lang"
+            class="header-dropdown-btn"
+            aria-expanded="${appState.headerMenuOpen === 'lang' ? 'true' : 'false'}"
           >
-            ${t('Mock Data', 'மாதிரி தரவு')}
+            <span class="material-symbols-outlined" style="font-size:1rem;color:var(--primary);">translate</span>
+            <span>${appState.language === 'ta' ? 'தமிழ்' : 'English'}</span>
+            <span class="material-symbols-outlined" style="font-size:1rem;">expand_more</span>
           </button>
-          <button
-            type="button"
-            id="btn-mode-live"
-            class="segmented-btn ${appState.apiMode === 'live' ? 'active-secondary' : ''}"
-            title="Connects to live backend API"
-          >
-            ${t('Live API', 'நேரடி API')}
-          </button>
+
+          ${
+            appState.headerMenuOpen === 'lang'
+              ? `
+              <div class="popover-menu header-menu-xs">
+                <div class="menu-section-title">${t('Interface Language', 'இடைமுக மொழி')}</div>
+                <button type="button" id="btn-lang-en" class="menu-option ${appState.language === 'en' ? 'active' : ''}">
+                  <span style="flex:1;font-weight:600;">English</span>
+                  ${appState.language === 'en' ? '<span class="material-symbols-outlined" style="font-size:1rem;color:var(--primary);">check</span>' : ''}
+                </button>
+                <button type="button" id="btn-lang-ta" class="menu-option ${appState.language === 'ta' ? 'active' : ''}">
+                  <span style="flex:1;font-weight:600;">தமிழ் (Tamil)</span>
+                  ${appState.language === 'ta' ? '<span class="material-symbols-outlined" style="font-size:1rem;color:var(--primary);">check</span>' : ''}
+                </button>
+              </div>
+            `
+              : ''
+          }
         </div>
 
-        <div class="segmented-pill">
-          <button
-            type="button"
-            id="btn-lang-ta"
-            class="segmented-btn ${appState.language === 'ta' ? 'active-white' : ''}"
-          >
-            தமிழ்
-          </button>
-          <button
-            type="button"
-            id="btn-lang-en"
-            class="segmented-btn ${appState.language === 'en' ? 'active-white' : ''}"
-          >
-            English
-          </button>
-        </div>
-
-        <div style="position:relative;">
+        <div class="header-dropdown-wrap" data-header-dropdown>
           <button
             id="btn-notifications"
             type="button"
             class="icon-circle-btn"
             aria-label="${t('Notifications', 'அறிவிப்புகள்')}"
+            aria-expanded="${appState.notificationsOpen ? 'true' : 'false'}"
           >
             <span class="material-symbols-outlined">notifications</span>
             ${unreadCount > 0 ? '<span class="notif-dot"></span>' : ''}
@@ -123,14 +154,47 @@ export function renderHeader() {
           }
         </div>
 
-        <div class="profile-chip">
-          <div class="avatar-circle">${escapeHtml(user.initials)}</div>
-          <div class="hide-sm" style="flex-direction:column;line-height:1.25;">
-            <span style="font-size:0.76rem;font-weight:700;">${escapeHtml(t(user.name, user.nameTamil))}</span>
-            <span style="font-size:0.68rem;color:var(--on-surface-variant);">
-              ${escapeHtml(t(user.role, 'நிர்வாகி'))} • ${escapeHtml(appState.currentSchool.district)}
-            </span>
-          </div>
+        <div class="header-dropdown-wrap" data-header-dropdown>
+          <button
+            type="button"
+            id="btn-header-profile"
+            class="profile-chip-btn"
+            aria-expanded="${appState.headerMenuOpen === 'profile' ? 'true' : 'false'}"
+          >
+            <div class="avatar-circle">${escapeHtml(user.initials)}</div>
+            <div class="hide-sm" style="flex-direction:column;align-items:flex-start;line-height:1.25;text-align:left;">
+              <span style="font-size:0.76rem;font-weight:700;color:var(--on-surface);">${escapeHtml(t(user.name, user.nameTamil))}</span>
+              <span style="font-size:0.66rem;color:var(--on-surface-variant);">
+                ${escapeHtml(appState.currentClass.name)} • ${escapeHtml(appState.currentSchool.district)}
+              </span>
+            </div>
+            <span class="material-symbols-outlined hide-sm" style="font-size:1rem;color:var(--on-surface-variant);">expand_more</span>
+          </button>
+
+          ${
+            appState.headerMenuOpen === 'profile'
+              ? `
+              <div class="popover-menu header-menu-md">
+                <div style="padding-bottom:0.6rem;border-bottom:1px solid var(--surface-container);">
+                  <div style="font-size:0.8rem;font-weight:700;">${escapeHtml(t(user.name, user.nameTamil))}</div>
+                  <div class="text-xs muted">${escapeHtml(t(user.role, 'ஆசிரியர் / நிர்வாகி'))}</div>
+                  <div class="text-xs muted" style="margin-top:0.25rem;">${escapeHtml(appState.currentSchool.name)}</div>
+                  <div class="badge badge-neutral" style="margin-top:0.4rem;">${escapeHtml(appState.currentClass.name)} • ${escapeHtml(appState.currentClass.medium)}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:0.2rem;padding-top:0.45rem;">
+                  <button type="button" id="btn-profile-admin" class="menu-option">
+                    <span class="material-symbols-outlined" style="font-size:1rem;color:var(--primary);">admin_panel_settings</span>
+                    <span>${t('School & Admin Settings', 'பள்ளி & நிர்வாக அமைப்புகள்')}</span>
+                  </button>
+                  <button type="button" id="btn-header-signout" class="menu-option" style="color:var(--error);">
+                    <span class="material-symbols-outlined" style="font-size:1rem;">logout</span>
+                    <span>${t('Switch School / Sign Out', 'பள்ளியை மாற்று / வெளியேறு')}</span>
+                  </button>
+                </div>
+              </div>
+            `
+              : ''
+          }
         </div>
       </div>
     </header>
@@ -150,17 +214,50 @@ export function bindHeaderEvents() {
   if (searchTrigger) {
     searchTrigger.addEventListener('click', () => {
       appState.searchModalOpen = true;
+      appState.headerMenuOpen = null;
+      appState.notificationsOpen = false;
       triggerRender();
     });
   }
+
+  document.getElementById('btn-header-mode')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    appState.notificationsOpen = false;
+    appState.headerMenuOpen = appState.headerMenuOpen === 'mode' ? null : 'mode';
+    triggerRender();
+  });
+
+  document.getElementById('btn-header-lang')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    appState.notificationsOpen = false;
+    appState.headerMenuOpen = appState.headerMenuOpen === 'lang' ? null : 'lang';
+    triggerRender();
+  });
+
+  document.getElementById('btn-header-profile')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    appState.notificationsOpen = false;
+    appState.headerMenuOpen = appState.headerMenuOpen === 'profile' ? null : 'profile';
+    triggerRender();
+  });
 
   document.getElementById('btn-mode-mock')?.addEventListener('click', () => switchApiMode('mock'));
   document.getElementById('btn-mode-live')?.addEventListener('click', () => switchApiMode('live'));
   document.getElementById('btn-lang-ta')?.addEventListener('click', () => setLanguage('ta'));
   document.getElementById('btn-lang-en')?.addEventListener('click', () => setLanguage('en'));
 
+  document.getElementById('btn-profile-admin')?.addEventListener('click', () => {
+    setActiveTab('admin-and-security');
+  });
+  document.getElementById('btn-header-signout')?.addEventListener('click', () => {
+    appState.headerMenuOpen = null;
+    appState.isLoggedIn = false;
+    triggerRender();
+  });
+
   document.getElementById('btn-notifications')?.addEventListener('click', (e) => {
     e.stopPropagation();
+    appState.headerMenuOpen = null;
     appState.notificationsOpen = !appState.notificationsOpen;
     triggerRender();
   });

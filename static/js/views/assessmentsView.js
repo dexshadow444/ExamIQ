@@ -105,6 +105,12 @@ export function bindAssessmentsEvents() {
     assessModalOpen = false;
     triggerRender();
   });
+  document.getElementById('assess-modal-backdrop')?.addEventListener('click', (e) => {
+    if (e.target.id === 'assess-modal-backdrop') {
+      assessModalOpen = false;
+      triggerRender();
+    }
+  });
 
   document.getElementById('form-new-assessment')?.addEventListener('submit', (e) => {
     e.preventDefault();

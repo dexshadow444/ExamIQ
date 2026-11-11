@@ -5,8 +5,19 @@ let marksState = {
   importModalOpen: false
 };
 
+const FIELD_MAX = { q1: 1, q2: 2, q3: 3, q4: 5, q5: 5 };
+
+function computeLedgerStats(students) {
+  const avgPct = students.length
+    ? ((students.reduce((acc, s) => acc + s.total / (s.maxTotal || 16), 0) / students.length) * 100).toFixed(1)
+    : '0.0';
+  const flagsCount = students.filter((s) => Boolean(s.flag)).length;
+  return { avgPct, flagsCount };
+}
+
 export function renderMarksManagementView() {
   const students = appState.marksLedger;
+  const stats = computeLedgerStats(students);
 
   return `
     <div class="page-container">
@@ -42,9 +53,9 @@ export function renderMarksManagementView() {
           </select>
         </div>
         <div class="flex-row text-xs muted" style="gap:1rem;">
-          <span>${t('Total Students:', 'மொத்த மாணவர்கள்:')} <strong style="color:var(--on-surface);">46</strong></span>
-          <span>${t('Class Average:', 'வகுப்பு சராசரி:')} <strong style="color:var(--secondary);">74.2%</strong></span>
-          <span>${t('Discrepancy Flags:', 'முரண்பாடு குறியீடுகள்:')} <strong style="color:var(--error);">2</strong></span>
+          <span>${t('Cohort Size:', 'மொத்த மாணவர்கள்:')} <strong style="color:var(--on-surface);">${appState.currentClass.studentsCount}</strong></span>
+          <span>${t('Ledger Average:', 'வகுப்பு சராசரி:')} <strong id="marks-avg-val" style="color:var(--secondary);">${stats.avgPct}%</strong></span>
+          <span>${t('Discrepancy Flags:', 'முரண்பாடு குறியீடுகள்:')} <strong style="color:var(--error);">${stats.flagsCount}</strong></span>
         </div>
       </div>
 
@@ -83,6 +94,7 @@ export function renderMarksManagementView() {
                       <input
                         type="number"
                         min="0"
+                        max="${FIELD_MAX[field]}"
                         class="input"
                         style="width:3rem;padding:0.3rem;text-align:center;"
                         data-mark-roll="${escapeHtml(s.rollNo)}"
@@ -157,13 +169,19 @@ export function bindMarksManagementEvents() {
     input.addEventListener('input', () => {
       const roll = input.getAttribute('data-mark-roll');
       const field = input.getAttribute('data-mark-field');
-      const val = Math.max(0, Number(input.value) || 0);
+      const maxVal = FIELD_MAX[field] || 5;
+      const clamped = Math.min(maxVal, Math.max(0, Number(input.value) || 0));
+      if (Number(input.value) > maxVal || Number(input.value) < 0) {
+        input.value = String(clamped);
+      }
       const student = appState.marksLedger.find((s) => s.rollNo === roll);
       if (!student) return;
-      student[field] = val;
+      student[field] = clamped;
       student.total = student.q1 + student.q2 + student.q3 + student.q4 + student.q5;
       const totalEl = document.getElementById(`total-${roll}`);
       if (totalEl) totalEl.textContent = String(student.total);
+      const avgEl = document.getElementById('marks-avg-val');
+      if (avgEl) avgEl.textContent = `${computeLedgerStats(appState.marksLedger).avgPct}%`;
     });
   });
 
@@ -180,10 +198,12 @@ export function bindMarksManagementEvents() {
     });
     const csv = rows.map((r) => r.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
+    link.href = url;
     link.download = `dge-marks-${marksState.assessment}.csv`;
     link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     showToast('Exported official marks register to CSV format', 'success');
   });
 
@@ -198,6 +218,12 @@ export function bindMarksManagementEvents() {
   document.getElementById('btn-cancel-marks-import')?.addEventListener('click', () => {
     marksState.importModalOpen = false;
     triggerRender();
+  });
+  document.getElementById('marks-import-backdrop')?.addEventListener('click', (e) => {
+    if (e.target.id === 'marks-import-backdrop') {
+      marksState.importModalOpen = false;
+      triggerRender();
+    }
   });
   document.getElementById('btn-exec-marks-import')?.addEventListener('click', () => {
     marksState.importModalOpen = false;

@@ -80,21 +80,18 @@ export function renderApiExplorerView() {
         </div>
       </section>
 
-      <div class="flex-row" style="overflow-x:auto;padding-bottom:0.25rem;flex-wrap:nowrap;">
-        ${categories
-          .map(
-            (cat) => `
-          <button
-            type="button"
-            class="btn ${appState.apiCategory === cat ? 'btn-primary' : 'btn-surface'}"
-            style="border-radius:9999px;padding:0.4rem 0.85rem;font-size:0.74rem;"
-            data-api-cat="${escapeHtml(cat)}"
-          >
-            ${escapeHtml(cat)}
-          </button>
-        `
-          )
-          .join('')}
+      <div class="card flex-between" style="padding:0.85rem 1rem;">
+        <div class="flex-row" style="gap:0.6rem;">
+          <label for="api-category-select" class="text-xs muted" style="font-weight:700;">${t('Endpoint Category:', 'API பிரிவு:')}</label>
+          <select id="api-category-select" class="select" style="width:auto;min-width:18rem;">
+            ${categories
+              .map(
+                (cat) => `<option value="${escapeHtml(cat)}" ${appState.apiCategory === cat ? 'selected' : ''}>${escapeHtml(cat)}</option>`
+              )
+              .join('')}
+          </select>
+        </div>
+        <span class="badge badge-neutral font-mono">${filtered.length} Endpoints</span>
       </div>
 
       <div class="grid grid-12" style="gap:1.25rem;align-items:start;">
@@ -194,11 +191,18 @@ export function bindApiExplorerEvents() {
   document.getElementById('api-exp-mock')?.addEventListener('click', () => switchApiMode('mock'));
   document.getElementById('api-exp-live')?.addEventListener('click', () => switchApiMode('live'));
 
-  document.querySelectorAll('[data-api-cat]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      appState.apiCategory = btn.getAttribute('data-api-cat');
-      triggerRender();
-    });
+  document.getElementById('api-category-select')?.addEventListener('change', (e) => {
+    appState.apiCategory = e.target.value;
+    const filtered =
+      appState.apiCategory === 'All'
+        ? API_ENDPOINTS
+        : API_ENDPOINTS.filter((ep) => ep.category === appState.apiCategory);
+    const current = API_ENDPOINTS[appState.selectedEndpointIdx];
+    if (filtered.length > 0 && !filtered.includes(current)) {
+      appState.selectedEndpointIdx = API_ENDPOINTS.indexOf(filtered[0]);
+      appState.apiTestResult = null;
+    }
+    triggerRender();
   });
 
   document.querySelectorAll('[data-select-ep]').forEach((el) => {
@@ -216,10 +220,14 @@ export function bindApiExplorerEvents() {
     });
   });
 
-  document.getElementById('btn-copy-snippet')?.addEventListener('click', () => {
+  document.getElementById('btn-copy-snippet')?.addEventListener('click', async () => {
     const ep = getSelectedEndpoint();
-    navigator.clipboard.writeText(activeSnippetText(ep));
-    showToast('Code snippet copied to clipboard!', 'success');
+    try {
+      await navigator.clipboard.writeText(activeSnippetText(ep));
+      showToast('Code snippet copied to clipboard!', 'success');
+    } catch (err) {
+      showToast('Could not access clipboard in this browser context', 'warning');
+    }
   });
 
   document.getElementById('btn-test-endpoint')?.addEventListener('click', async () => {
@@ -268,10 +276,12 @@ export function bindApiExplorerEvents() {
       }, {})
     };
     const blob = new Blob([JSON.stringify(spec, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
+    link.href = url;
     link.download = 'examiq-openapi-spec.json';
     link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     showToast('OpenAPI 3.0 JSON specification downloaded!', 'success');
   });
 }

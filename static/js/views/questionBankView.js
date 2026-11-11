@@ -9,8 +9,8 @@ let qbState = {
   addModalOpen: false
 };
 
-export function renderQuestionBankView() {
-  const filtered = appState.questions.filter((q) => {
+function getFilteredQuestions() {
+  return appState.questions.filter((q) => {
     if (qbState.marks !== 'all' && q.marks !== Number(qbState.marks)) return false;
     if (qbState.difficulty !== 'all' && q.difficulty !== qbState.difficulty) return false;
     if (qbState.chapter !== 'all' && q.chapterId !== Number(qbState.chapter)) return false;
@@ -25,10 +25,100 @@ export function renderQuestionBankView() {
     }
     return true;
   });
+}
+
+function renderQuestionCards(filtered) {
+  if (filtered.length === 0) {
+    return `
+      <div class="card" style="padding:2.5rem;text-align:center;">
+        <span class="material-symbols-outlined" style="font-size:2.2rem;color:var(--outline);">search_off</span>
+        <div style="font-weight:700;margin-top:0.4rem;">No questions match the active filters</div>
+        <div class="text-xs muted" style="margin-top:0.25rem;">Try clearing your search term or resetting chapter/marks filters.</div>
+      </div>
+    `;
+  }
+  return filtered
+    .map((q) => {
+      const isExpanded = appState.expandedQuestion === q.id;
+      const diffBadge = q.difficulty === 'Hard' ? 'badge-error' : q.difficulty === 'Medium' ? 'badge-tertiary' : 'badge-secondary';
+      return `
+        <article class="card card-hover">
+          <div class="flex-between" style="padding-bottom:0.65rem;border-bottom:1px solid var(--surface-container-low);">
+            <div class="flex-row">
+              <span class="font-mono text-xs" style="font-weight:800;color:var(--primary);">${escapeHtml(q.code)}</span>
+              <span class="badge badge-primary">${q.marks} Marks</span>
+              <span class="badge badge-neutral">${escapeHtml(q.type)}</span>
+              <span class="badge ${diffBadge}">${escapeHtml(q.difficulty)}</span>
+              <span class="text-xs muted">Ch ${q.chapterId}: ${escapeHtml(q.topic)}</span>
+            </div>
+            <div class="flex-row">
+              <span class="text-xs" style="color:var(--secondary);font-weight:700;">${q.ocrConfidence}% OCR</span>
+              <button type="button" class="btn-ghost" data-expand-q="${escapeHtml(q.id)}" style="padding:0.25rem;border-radius:0.4rem;">
+                <span class="material-symbols-outlined">${isExpanded ? 'expand_less' : 'expand_more'}</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex-col" style="padding:0.75rem 0;gap:0.45rem;">
+            <div class="text-xs" style="line-height:1.5;"><strong style="color:var(--primary);">[EN]</strong> ${escapeHtml(q.questionEn)}</div>
+            <div class="text-xs font-tamil muted"><strong style="color:var(--secondary);">[தமிழ்]</strong> ${escapeHtml(q.questionTa)}</div>
+          </div>
+
+          <div class="flex-row">
+            <span class="badge badge-neutral font-mono"><span class="material-symbols-outlined" style="font-size:0.8rem;">book</span>${escapeHtml(q.source)}</span>
+            ${q.historicalExam ? `<span class="badge badge-neutral font-mono"><span class="material-symbols-outlined" style="font-size:0.8rem;">history_edu</span>${escapeHtml(q.historicalExam)}</span>` : ''}
+          </div>
+
+          ${
+            isExpanded
+              ? `
+            <div class="soft-panel flex-col" style="margin-top:0.85rem;gap:0.75rem;">
+              <div>
+                <div class="text-xs" style="font-weight:700;text-transform:uppercase;margin-bottom:0.4rem;display:flex;align-items:center;gap:0.35rem;">
+                  <span class="material-symbols-outlined" style="color:var(--secondary);font-size:1rem;">checklist</span>
+                  Stepwise Marking Scheme &amp; Rubrics
+                </div>
+                ${q.rubric
+                  .map(
+                    (r) => `
+                  <div class="flex-between text-xs" style="padding:0.35rem 0;border-bottom:1px solid var(--surface-container);">
+                    <span>${escapeHtml(r.step)}</span>
+                    <strong class="font-mono" style="color:var(--primary);">${r.marks} M</strong>
+                  </div>
+                `
+                  )
+                  .join('')}
+              </div>
+
+              <div style="background:var(--surface-container);padding:0.55rem 0.75rem;border-radius:0.55rem;" class="text-xs">
+                <strong style="color:var(--secondary);">Answer Key: </strong>
+                <span class="font-mono">${escapeHtml(q.answerKey)}</span>
+              </div>
+
+              <div class="flex-between">
+                <button type="button" class="btn btn-ghost" style="color:var(--primary);padding-left:0;" data-copy-latex="${escapeHtml(q.code)}">
+                  <span class="material-symbols-outlined" style="font-size:0.95rem;">content_copy</span>
+                  <span>Copy LaTeX Code</span>
+                </button>
+                <button type="button" class="btn btn-primary" data-pin-q="${escapeHtml(q.code)}">Add to Paper Draft</button>
+              </div>
+            </div>
+          `
+              : ''
+          }
+        </article>
+      `;
+    })
+    .join('');
+}
+
+export function renderQuestionBankView() {
+  const filtered = getFilteredQuestions();
+  const hasFilters = qbState.search || qbState.chapter !== 'all' || qbState.marks !== 'all' || qbState.difficulty !== 'all';
 
   return `
     <div class="page-container">
-      <header class="flex-between">
+      <header class="flex-between" style="align-items:flex-start;">
         <div>
           <div class="flex-row">
             <h1 class="page-title">${t('Intelligent Question Bank', 'அங்கீகரிக்கப்பட்ட வினா வங்கி')}</h1>
@@ -37,7 +127,7 @@ export function renderQuestionBankView() {
           <p class="page-subtitle">Centralized searchable repository with stepwise marking schemes, Tamil/English bilingual text, and OCR traceability.</p>
         </div>
 
-        <div class="flex-row">
+        <div class="flex-row" style="justify-content:flex-end;">
           <button type="button" id="btn-qb-to-paper" class="btn btn-surface">
             <span class="material-symbols-outlined" style="color:var(--primary);font-size:1rem;">auto_awesome</span>
             <span>${t('Use in Paper Generator', 'வினாத்தாள் உருவாக்கத்தில் பயன்படுத்து')}</span>
@@ -89,7 +179,10 @@ export function renderQuestionBankView() {
         </div>
 
         <div class="flex-between text-xs muted" style="padding-top:0.65rem;border-top:1px solid var(--surface-container-low);">
-          <span>${t('Showing', 'சரிபார்க்கப்பட்ட வினாக்கள்:')} <strong>${filtered.length}</strong> ${t('verified questions', '')}</span>
+          <div class="flex-row">
+            <span id="qb-count-text">${t('Showing', 'சரிபார்க்கப்பட்ட வினாக்கள்:')} <strong>${filtered.length}</strong> ${t('verified questions', '')}</span>
+            ${hasFilters ? `<button type="button" id="btn-qb-reset-filters" class="btn-ghost" style="border:none;color:var(--primary);font-size:0.74rem;font-weight:700;padding:0.1rem 0.4rem;">Reset Filters</button>` : ''}
+          </div>
           <span style="color:var(--secondary);font-weight:600;display:inline-flex;align-items:center;gap:0.25rem;">
             <span class="material-symbols-outlined" style="font-size:0.95rem;">verified</span>
             100% LaTeX Formula Fidelity
@@ -97,80 +190,8 @@ export function renderQuestionBankView() {
         </div>
       </section>
 
-      <section class="flex-col" style="gap:0.85rem;">
-        ${filtered
-          .map((q) => {
-            const isExpanded = appState.expandedQuestion === q.id;
-            const diffBadge = q.difficulty === 'Hard' ? 'badge-error' : q.difficulty === 'Medium' ? 'badge-tertiary' : 'badge-secondary';
-            return `
-              <article class="card card-hover">
-                <div class="flex-between" style="padding-bottom:0.65rem;border-bottom:1px solid var(--surface-container-low);">
-                  <div class="flex-row">
-                    <span class="font-mono text-xs" style="font-weight:800;color:var(--primary);">${escapeHtml(q.code)}</span>
-                    <span class="badge badge-primary">${q.marks} Marks</span>
-                    <span class="badge badge-neutral">${escapeHtml(q.type)}</span>
-                    <span class="badge ${diffBadge}">${escapeHtml(q.difficulty)}</span>
-                    <span class="text-xs muted">Ch ${q.chapterId}: ${escapeHtml(q.topic)}</span>
-                  </div>
-                  <div class="flex-row">
-                    <span class="text-xs" style="color:var(--secondary);font-weight:700;">${q.ocrConfidence}% OCR</span>
-                    <button type="button" class="btn-ghost" data-expand-q="${escapeHtml(q.id)}" style="padding:0.25rem;border-radius:0.4rem;">
-                      <span class="material-symbols-outlined">${isExpanded ? 'expand_less' : 'expand_more'}</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="flex-col" style="padding:0.75rem 0;gap:0.45rem;">
-                  <div class="text-xs" style="line-height:1.5;"><strong style="color:var(--primary);">[EN]</strong> ${escapeHtml(q.questionEn)}</div>
-                  <div class="text-xs font-tamil muted"><strong style="color:var(--secondary);">[தமிழ்]</strong> ${escapeHtml(q.questionTa)}</div>
-                </div>
-
-                <div class="flex-row">
-                  <span class="badge badge-neutral font-mono"><span class="material-symbols-outlined" style="font-size:0.8rem;">book</span>${escapeHtml(q.source)}</span>
-                  ${q.historicalExam ? `<span class="badge badge-neutral font-mono"><span class="material-symbols-outlined" style="font-size:0.8rem;">history_edu</span>${escapeHtml(q.historicalExam)}</span>` : ''}
-                </div>
-
-                ${
-                  isExpanded
-                    ? `
-                  <div class="soft-panel flex-col" style="margin-top:0.85rem;gap:0.75rem;">
-                    <div>
-                      <div class="text-xs" style="font-weight:700;text-transform:uppercase;margin-bottom:0.4rem;display:flex;align-items:center;gap:0.35rem;">
-                        <span class="material-symbols-outlined" style="color:var(--secondary);font-size:1rem;">checklist</span>
-                        Stepwise Marking Scheme &amp; Rubrics
-                      </div>
-                      ${q.rubric
-                        .map(
-                          (r) => `
-                        <div class="flex-between text-xs" style="padding:0.35rem 0;border-bottom:1px solid var(--surface-container);">
-                          <span>${escapeHtml(r.step)}</span>
-                          <strong class="font-mono" style="color:var(--primary);">${r.marks} M</strong>
-                        </div>
-                      `
-                        )
-                        .join('')}
-                    </div>
-
-                    <div style="background:var(--surface-container);padding:0.55rem 0.75rem;border-radius:0.55rem;" class="text-xs">
-                      <strong style="color:var(--secondary);">Answer Key: </strong>
-                      <span class="font-mono">${escapeHtml(q.answerKey)}</span>
-                    </div>
-
-                    <div class="flex-between">
-                      <button type="button" class="btn btn-ghost" style="color:var(--primary);padding-left:0;" data-copy-latex="${escapeHtml(q.code)}">
-                        <span class="material-symbols-outlined" style="font-size:0.95rem;">content_copy</span>
-                        <span>Copy LaTeX Code</span>
-                      </button>
-                      <button type="button" class="btn btn-primary" data-pin-q="${escapeHtml(q.code)}">Add to Paper Draft</button>
-                    </div>
-                  </div>
-                `
-                    : ''
-                }
-              </article>
-            `;
-          })
-          .join('')}
+      <section id="qb-list-container" class="flex-col" style="gap:0.85rem;">
+        ${renderQuestionCards(filtered)}
       </section>
 
       ${
@@ -238,10 +259,56 @@ export function renderQuestionBankView() {
   `;
 }
 
+function bindQuestionCardEvents() {
+  document.querySelectorAll('[data-expand-q]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-expand-q');
+      appState.expandedQuestion = appState.expandedQuestion === id ? null : id;
+      const listEl = document.getElementById('qb-list-container');
+      if (listEl) {
+        listEl.innerHTML = renderQuestionCards(getFilteredQuestions());
+        bindQuestionCardEvents();
+      } else {
+        triggerRender();
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-copy-latex]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const code = btn.getAttribute('data-copy-latex');
+      const q = appState.questions.find((item) => item.code === code);
+      const text = q ? `${q.questionEn}\nAnswer: ${q.answerKey}` : code;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (err) {
+        console.warn('Clipboard fallback:', err);
+      }
+      showToast(`LaTeX markup copied for ${code}`, 'success');
+    });
+  });
+
+  document.querySelectorAll('[data-pin-q]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      showToast(`Question ${btn.getAttribute('data-pin-q')} pinned to next paper generation draft`, 'success');
+      setActiveTab('paper-generator');
+    });
+  });
+}
+
 export function bindQuestionBankEvents() {
   document.getElementById('qb-search')?.addEventListener('input', (e) => {
     qbState.search = e.target.value;
-    triggerRender();
+    const filtered = getFilteredQuestions();
+    const listEl = document.getElementById('qb-list-container');
+    const countEl = document.getElementById('qb-count-text');
+    if (listEl) {
+      listEl.innerHTML = renderQuestionCards(filtered);
+      bindQuestionCardEvents();
+    }
+    if (countEl) {
+      countEl.innerHTML = `${t('Showing', 'சரிபார்க்கப்பட்ட வினாக்கள்:')} <strong>${filtered.length}</strong> ${t('verified questions', '')}`;
+    }
   });
   document.getElementById('qb-chapter')?.addEventListener('change', (e) => {
     qbState.chapter = e.target.value;
@@ -253,6 +320,13 @@ export function bindQuestionBankEvents() {
   });
   document.getElementById('qb-difficulty')?.addEventListener('change', (e) => {
     qbState.difficulty = e.target.value;
+    triggerRender();
+  });
+  document.getElementById('btn-qb-reset-filters')?.addEventListener('click', () => {
+    qbState.search = '';
+    qbState.chapter = 'all';
+    qbState.marks = 'all';
+    qbState.difficulty = 'all';
     triggerRender();
   });
 
@@ -269,27 +343,14 @@ export function bindQuestionBankEvents() {
     qbState.addModalOpen = false;
     triggerRender();
   });
-
-  document.querySelectorAll('[data-expand-q]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-expand-q');
-      appState.expandedQuestion = appState.expandedQuestion === id ? null : id;
+  document.getElementById('add-q-backdrop')?.addEventListener('click', (e) => {
+    if (e.target.id === 'add-q-backdrop') {
+      qbState.addModalOpen = false;
       triggerRender();
-    });
+    }
   });
 
-  document.querySelectorAll('[data-copy-latex]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      showToast(`LaTeX markup copied for ${btn.getAttribute('data-copy-latex')}`, 'success');
-    });
-  });
-
-  document.querySelectorAll('[data-pin-q]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      showToast(`Question ${btn.getAttribute('data-pin-q')} pinned to next paper generation draft`, 'success');
-      setActiveTab('paper-generator');
-    });
-  });
+  bindQuestionCardEvents();
 
   document.getElementById('form-add-question')?.addEventListener('submit', async (e) => {
     e.preventDefault();
