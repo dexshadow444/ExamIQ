@@ -1,0 +1,72 @@
+<template id="tpl-vocational-module">
+  <div class="page-container">
+    <header class="flex-between" style="align-items:flex-start;">
+      <div style="max-width:42rem;">
+        <div class="flex-row">
+          <h1 class="page-title" data-el="page-title"></h1>
+          <span class="badge badge-primary">Trade &amp; Practical Rubrics</span>
+        </div>
+        <p class="page-subtitle">Tamil Nadu State Board Vocational Stream (Class 12) theory blueprints, workshop safety protocols, and hands-on skill logs.</p>
+      </div>
+
+      <div class="flex-row" style="justify-content:flex-end;">
+        <label for="voc-trade-select" class="text-xs" style="font-weight:700;" data-el="trade-label"></label>
+        <select id="voc-trade-select" class="select" style="width:auto;min-width:18rem;"></select>
+      </div>
+    </header>
+
+    <section class="card card-lg flex-between">
+      <div>
+        <div class="flex-row">
+          <span class="badge badge-primary font-mono" data-el="trade-code-badge"></span>
+          <span class="text-xs muted" data-el="enrolled-text"></span>
+        </div>
+        <h2 style="margin:0.45rem 0 0;font-size:1.15rem;font-weight:800;" data-el="trade-name"></h2>
+      </div>
+
+      <button type="button" id="btn-gen-workshop-sheet" class="btn btn-secondary">
+        <span class="material-symbols-outlined" style="font-size:1rem;">precision_manufacturing</span>
+        <span data-el="sheet-btn-label"></span>
+      </button>
+    </section>
+
+    <div class="grid grid-2" style="gap:1.25rem;">
+      <section class="card flex-col" style="gap:0.85rem;">
+        <strong class="text-sm flex-row"><span class="material-symbols-outlined" style="color:var(--primary);">menu_book</span>Vocational Trade Curriculum Modules</strong>
+        <div class="flex-col" style="gap:0.85rem;" data-el="modules-list"></div>
+      </section>
+
+      <section class="card flex-col" style="gap:0.85rem;">
+        <strong class="text-sm flex-row"><span class="material-symbols-outlined" style="color:var(--secondary);">build</span>Skill-Based Evaluation &amp; Practical Rubrics</strong>
+        <div class="flex-col" style="gap:0.85rem;" data-el="rubrics-list"></div>
+      </section>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-voc-module-card">
+  <div class="soft-panel flex-col" style="gap:0.25rem;">
+    <div class="flex-between">
+      <span class="font-mono text-xs" style="font-weight:700;color:var(--primary);" data-el="mod-id"></span>
+      <span class="badge" data-el="mod-status"></span>
+    </div>
+    <div class="text-xs" style="font-weight:700;" data-el="mod-title"></div>
+    <div class="font-mono text-xs muted" data-el="mod-hours"></div>
+  </div>
+</template>
+
+<template id="tpl-voc-rubric-card">
+  <div class="card" style="box-shadow:none;padding:0.85rem;display:flex;flex-direction:column;gap:0.4rem;">
+    <div class="flex-between">
+      <strong class="text-xs" data-el="rubric-skill"></strong>
+      <strong class="font-mono text-xs" style="color:var(--primary);" data-el="rubric-marks"></strong>
+    </div>
+    <div class="flex-between text-xs muted">
+      <span data-el="rubric-completed"></span>
+      <strong style="color:var(--secondary);" data-el="rubric-pct"></strong>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" style="background:var(--secondary);" data-el="rubric-fill"></div>
+    </div>
+  </div>
+</template>

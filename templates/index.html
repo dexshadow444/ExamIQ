@@ -15,6 +15,46 @@
   <div id="modal-root"></div>
   <div id="toast-root" class="toast-container" aria-live="polite"></div>
 
+  <template id="tpl-app-shell">
+    <div class="app-shell">
+      <div data-slot="sidebar"></div>
+      <div data-slot="header"></div>
+      <main class="main-canvas" data-slot="main"></main>
+    </div>
+  </template>
+
+  <template id="tpl-toast">
+    <div class="toast">
+      <div class="flex-row" style="gap:0.45rem;flex-wrap:nowrap;">
+        <span class="material-symbols-outlined" style="font-size:1.1rem;" data-el="toast-icon"></span>
+        <span data-el="toast-msg"></span>
+      </div>
+      <button type="button" data-dismiss-toast style="border:none;background:transparent;color:inherit;opacity:0.8;padding:0;display:flex;">
+        <span class="material-symbols-outlined" style="font-size:1rem;">close</span>
+      </button>
+    </div>
+  </template>
+
+  {% include 'components/sidebar.html' %}
+  {% include 'components/header.html' %}
+  {% include 'components/search_modal.html' %}
+
+  {% include 'views/login.html' %}
+  {% include 'views/dashboard.html' %}
+  {% include 'views/teaching_progress.html' %}
+  {% include 'views/resource_hub.html' %}
+  {% include 'views/question_bank.html' %}
+  {% include 'views/paper_generator.html' %}
+  {% include 'views/assessments.html' %}
+  {% include 'views/answer_evaluation.html' %}
+  {% include 'views/marks_management.html' %}
+  {% include 'views/student_learning_dna.html' %}
+  {% include 'views/remedial_learning.html' %}
+  {% include 'views/vocational_module.html' %}
+  {% include 'views/reports_analytics.html' %}
+  {% include 'views/admin_security.html' %}
+  {% include 'views/api_explorer.html' %}
+
   <script>
     window.EXAMIQ_CONFIG = {{ config | tojson }};
   </script>

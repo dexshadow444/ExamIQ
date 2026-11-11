@@ -36,6 +36,8 @@ const VIEW_REGISTRY = {
   'api-explorer': { render: renderApiExplorerView, bind: bindApiExplorerEvents }
 };
 
+import { clearChildren, cloneTemplate, qs } from './utils/dom.js';
+
 function renderApp() {
   const appRoot = document.getElementById('app-root');
   const modalRoot = document.getElementById('modal-root');
@@ -44,26 +46,28 @@ function renderApp() {
   document.documentElement.lang = appState.language;
 
   if (!appState.isLoggedIn) {
-    appRoot.innerHTML = renderLoginView();
-    modalRoot.innerHTML = '';
+    appRoot.replaceChildren(renderLoginView());
+    clearChildren(modalRoot);
     bindLoginEvents();
     renderToasts();
     return;
   }
 
   const activeView = VIEW_REGISTRY[appState.activeTab] || VIEW_REGISTRY.dashboard;
+  const shell = cloneTemplate('tpl-app-shell');
 
-  appRoot.innerHTML = `
-    <div class="app-shell">
-      ${renderSidebar()}
-      ${renderHeader()}
-      <main class="main-canvas">
-        ${activeView.render()}
-      </main>
-    </div>
-  `;
+  qs(shell, '[data-slot="sidebar"]')?.replaceWith(renderSidebar());
+  qs(shell, '[data-slot="header"]')?.replaceWith(renderHeader());
+  qs(shell, '[data-slot="main"]')?.replaceChildren(activeView.render());
 
-  modalRoot.innerHTML = renderSearchModal();
+  appRoot.replaceChildren(shell);
+
+  const modalNode = renderSearchModal();
+  if (modalNode) {
+    modalRoot.replaceChildren(modalNode);
+  } else {
+    clearChildren(modalRoot);
+  }
 
   bindSidebarEvents();
   bindHeaderEvents();

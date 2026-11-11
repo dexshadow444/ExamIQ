@@ -1,92 +1,58 @@
 import { VOCATIONAL_MODULES_DATA } from '../data/mockData.js';
-import { appState, escapeHtml, showToast, t, triggerRender } from '../state.js';
+import { appState, showToast, t, triggerRender } from '../state.js';
+import { cloneTemplate, fillSelect, qs, setText } from '../utils/dom.js';
 
 export function renderVocationalModuleView() {
+  const root = cloneTemplate('tpl-vocational-module');
   const trade =
     VOCATIONAL_MODULES_DATA.find((tr) => tr.tradeCode === appState.selectedTradeCode) ||
     VOCATIONAL_MODULES_DATA[0];
 
-  return `
-    <div class="page-container">
-      <header class="flex-between" style="align-items:flex-start;">
-        <div style="max-width:42rem;">
-          <div class="flex-row">
-            <h1 class="page-title">${t('Vocational Education Intelligence', 'தொழிற்கல்வி நுண்ணறிவுப் பிரிவு')}</h1>
-            <span class="badge badge-primary">Trade &amp; Practical Rubrics</span>
-          </div>
-          <p class="page-subtitle">Tamil Nadu State Board Vocational Stream (Class 12) theory blueprints, workshop safety protocols, and hands-on skill logs.</p>
-        </div>
+  setText(root, '[data-el="page-title"]', t('Vocational Education Intelligence', 'தொழிற்கல்வி நுண்ணறிவுப் பிரிவு'));
+  setText(root, '[data-el="trade-label"]', t('Select Trade:', 'தொழிற்பிரிவைத் தேர்ந்தெடுக்கவும்:'));
 
-        <div class="flex-row" style="justify-content:flex-end;">
-          <label for="voc-trade-select" class="text-xs" style="font-weight:700;">${t('Select Trade:', 'தொழிற்பிரிவைத் தேர்ந்தெடுக்கவும்:')}</label>
-          <select id="voc-trade-select" class="select" style="width:auto;min-width:18rem;">
-            ${VOCATIONAL_MODULES_DATA.map(
-              (tr) => `<option value="${escapeHtml(tr.tradeCode)}" ${tr.tradeCode === trade.tradeCode ? 'selected' : ''}>Trade ${escapeHtml(tr.tradeCode)}: ${escapeHtml(tr.name)}</option>`
-            ).join('')}
-          </select>
-        </div>
-      </header>
+  fillSelect(
+    qs(root, '#voc-trade-select'),
+    VOCATIONAL_MODULES_DATA.map((tr) => ({
+      value: tr.tradeCode,
+      label: `Trade ${tr.tradeCode}: ${tr.name}`
+    })),
+    trade.tradeCode
+  );
 
-      <section class="card card-lg flex-between">
-        <div>
-          <div class="flex-row">
-            <span class="badge badge-primary font-mono">Trade Code #${escapeHtml(trade.tradeCode)}</span>
-            <span class="text-xs muted">${trade.enrolledStudents} Enrolled Candidates</span>
-          </div>
-          <h2 style="margin:0.45rem 0 0;font-size:1.15rem;font-weight:800;">${escapeHtml(t(trade.name, trade.nameTamil))}</h2>
-        </div>
+  setText(root, '[data-el="trade-code-badge"]', `Trade Code #${trade.tradeCode}`);
+  setText(root, '[data-el="enrolled-text"]', `${trade.enrolledStudents} Enrolled Candidates`);
+  setText(root, '[data-el="trade-name"]', t(trade.name, trade.nameTamil));
+  setText(root, '[data-el="sheet-btn-label"]', t('Generate Workshop Practical Sheet', 'பட்டறை செய்முறைத் தாளை உருவாக்கு'));
 
-        <button type="button" id="btn-gen-workshop-sheet" class="btn btn-secondary">
-          <span class="material-symbols-outlined" style="font-size:1rem;">precision_manufacturing</span>
-          <span>${t('Generate Workshop Practical Sheet', 'பட்டறை செய்முறைத் தாளை உருவாக்கு')}</span>
-        </button>
-      </section>
+  const modList = qs(root, '[data-el="modules-list"]');
+  trade.modules.forEach((mod) => {
+    const card = cloneTemplate('tpl-voc-module-card');
+    setText(card, '[data-el="mod-id"]', mod.id);
+    const st = qs(card, '[data-el="mod-status"]');
+    if (st) {
+      st.className = `badge ${mod.status === 'Completed' ? 'badge-secondary' : 'badge-neutral'}`;
+      st.textContent = mod.status;
+    }
+    setText(card, '[data-el="mod-title"]', mod.title);
+    setText(card, '[data-el="mod-hours"]', `${mod.practicalHours} Practical Workshop Hours • ${mod.theoryHours} Theory Hours`);
+    modList.appendChild(card);
+  });
 
-      <div class="grid grid-2" style="gap:1.25rem;">
-        <section class="card flex-col" style="gap:0.85rem;">
-          <strong class="text-sm flex-row"><span class="material-symbols-outlined" style="color:var(--primary);">menu_book</span>Vocational Trade Curriculum Modules</strong>
-          ${trade.modules
-            .map(
-              (mod) => `
-            <div class="soft-panel flex-col" style="gap:0.25rem;">
-              <div class="flex-between">
-                <span class="font-mono text-xs" style="font-weight:700;color:var(--primary);">${escapeHtml(mod.id)}</span>
-                <span class="badge ${mod.status === 'Completed' ? 'badge-secondary' : 'badge-neutral'}">${escapeHtml(mod.status)}</span>
-              </div>
-              <div class="text-xs" style="font-weight:700;">${escapeHtml(mod.title)}</div>
-              <div class="font-mono text-xs muted">${mod.practicalHours} Practical Workshop Hours • ${mod.theoryHours} Theory Hours</div>
-            </div>
-          `
-            )
-            .join('')}
-        </section>
+  const rubList = qs(root, '[data-el="rubrics-list"]');
+  trade.practicalRubrics.forEach((rubric) => {
+    const card = cloneTemplate('tpl-voc-rubric-card');
+    const pct = Math.round((rubric.completedStudents / trade.enrolledStudents) * 100);
+    setText(card, '[data-el="rubric-skill"]', rubric.skill);
+    setText(card, '[data-el="rubric-marks"]', `${rubric.maxMarks} Marks`);
+    setText(card, '[data-el="rubric-completed"]', `Completed: ${rubric.completedStudents} / ${trade.enrolledStudents} Students`);
+    setText(card, '[data-el="rubric-pct"]', `${pct}% Verified`);
+    const fill = qs(card, '[data-el="rubric-fill"]');
+    if (fill) fill.style.width = `${pct}%`;
+    rubList.appendChild(card);
+  });
 
-        <section class="card flex-col" style="gap:0.85rem;">
-          <strong class="text-sm flex-row"><span class="material-symbols-outlined" style="color:var(--secondary);">build</span>Skill-Based Evaluation &amp; Practical Rubrics</strong>
-          ${trade.practicalRubrics
-            .map((rubric) => {
-              const pct = Math.round((rubric.completedStudents / trade.enrolledStudents) * 100);
-              return `
-              <div class="card" style="box-shadow:none;padding:0.85rem;display:flex;flex-direction:column;gap:0.4rem;">
-                <div class="flex-between">
-                  <strong class="text-xs">${escapeHtml(rubric.skill)}</strong>
-                  <strong class="font-mono text-xs" style="color:var(--primary);">${rubric.maxMarks} Marks</strong>
-                </div>
-                <div class="flex-between text-xs muted">
-                  <span>Completed: ${rubric.completedStudents} / ${trade.enrolledStudents} Students</span>
-                  <strong style="color:var(--secondary);">${pct}% Verified</strong>
-                </div>
-                <div class="progress-track">
-                  <div class="progress-fill" style="width:${pct}%;background:var(--secondary);"></div>
-                </div>
-              </div>
-            `;
-            })
-            .join('')}
-        </section>
-      </div>
-    </div>
-  `;
+  return root;
 }
 
 export function bindVocationalModuleEvents() {

@@ -1,0 +1,123 @@
+<template id="tpl-header">
+  <header class="top-header">
+    <div class="flex-row" style="flex:1;min-width:0;gap:0.75rem;flex-wrap:nowrap;">
+      <button id="btn-mobile-menu" type="button" class="mobile-menu-btn" aria-label="Toggle navigation">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+
+      <div id="header-search-trigger" class="header-search-wrap">
+        <span class="material-symbols-outlined header-search-icon">search</span>
+        <input readonly type="text" class="header-search-input" data-el="search-input" />
+        <kbd class="kbd-shortcut">Ctrl+K</kbd>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="header-dropdown-wrap hide-sm" data-header-dropdown>
+        <button type="button" id="btn-header-mode" class="header-dropdown-btn">
+          <span class="status-dot" data-el="mode-dot"></span>
+          <span data-el="mode-label"></span>
+          <span class="material-symbols-outlined" style="font-size:1rem;">expand_more</span>
+        </button>
+
+        <div class="popover-menu header-menu-sm" data-el="mode-menu" hidden>
+          <div class="menu-section-title" data-el="mode-menu-title"></div>
+          <button type="button" id="btn-mode-mock" class="menu-option">
+            <span class="status-dot" style="background:var(--primary);"></span>
+            <div style="flex:1;">
+              <div style="font-weight:700;" data-el="opt-mock-title"></div>
+              <div class="text-xs muted">In-browser simulation</div>
+            </div>
+            <span class="material-symbols-outlined" style="font-size:1rem;color:var(--primary);" data-el="opt-mock-check" hidden>check</span>
+          </button>
+          <button type="button" id="btn-mode-live" class="menu-option">
+            <span class="status-dot" style="background:var(--secondary);"></span>
+            <div style="flex:1;">
+              <div style="font-weight:700;" data-el="opt-live-title"></div>
+              <div class="text-xs muted">Connect to backend server</div>
+            </div>
+            <span class="material-symbols-outlined" style="font-size:1rem;color:var(--secondary);" data-el="opt-live-check" hidden>check</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="header-dropdown-wrap" data-header-dropdown>
+        <button type="button" id="btn-header-lang" class="header-dropdown-btn">
+          <span class="material-symbols-outlined" style="font-size:1rem;color:var(--primary);">translate</span>
+          <span data-el="lang-label"></span>
+          <span class="material-symbols-outlined" style="font-size:1rem;">expand_more</span>
+        </button>
+
+        <div class="popover-menu header-menu-xs" data-el="lang-menu" hidden>
+          <div class="menu-section-title" data-el="lang-menu-title"></div>
+          <button type="button" id="btn-lang-en" class="menu-option">
+            <span style="flex:1;font-weight:600;">English</span>
+            <span class="material-symbols-outlined" style="font-size:1rem;color:var(--primary);" data-el="opt-en-check" hidden>check</span>
+          </button>
+          <button type="button" id="btn-lang-ta" class="menu-option">
+            <span style="flex:1;font-weight:600;">தமிழ் (Tamil)</span>
+            <span class="material-symbols-outlined" style="font-size:1rem;color:var(--primary);" data-el="opt-ta-check" hidden>check</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="header-dropdown-wrap" data-header-dropdown>
+        <button id="btn-notifications" type="button" class="icon-circle-btn">
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="notif-dot" data-el="notif-dot" hidden></span>
+        </button>
+
+        <div class="popover-menu" data-el="notif-menu" hidden>
+          <div class="flex-between" style="padding-bottom:0.5rem;border-bottom:1px solid var(--surface-container);">
+            <strong style="font-size:0.84rem;" data-el="notif-title"></strong>
+            <button id="btn-mark-all-read" type="button" class="btn-ghost" style="border:none;font-size:0.72rem;color:var(--primary);font-weight:700;padding:0.15rem 0.35rem;"></button>
+          </div>
+          <div style="max-height:17rem;overflow-y:auto;" data-el="notif-list"></div>
+        </div>
+      </div>
+
+      <div class="header-dropdown-wrap" data-header-dropdown>
+        <button type="button" id="btn-header-profile" class="profile-chip-btn">
+          <div class="avatar-circle" data-el="user-initials"></div>
+          <div class="hide-sm" style="flex-direction:column;align-items:flex-start;line-height:1.25;text-align:left;">
+            <span style="font-size:0.76rem;font-weight:700;color:var(--on-surface);" data-el="user-name"></span>
+            <span style="font-size:0.66rem;color:var(--on-surface-variant);" data-el="user-sub"></span>
+          </div>
+          <span class="material-symbols-outlined hide-sm" style="font-size:1rem;color:var(--on-surface-variant);">expand_more</span>
+        </button>
+
+        <div class="popover-menu header-menu-md" data-el="profile-menu" hidden>
+          <div style="padding-bottom:0.6rem;border-bottom:1px solid var(--surface-container);">
+            <div style="font-size:0.8rem;font-weight:700;" data-el="menu-user-name"></div>
+            <div class="text-xs muted" data-el="menu-user-role"></div>
+            <div class="text-xs muted" style="margin-top:0.25rem;" data-el="menu-school-name"></div>
+            <div class="badge badge-neutral" style="margin-top:0.4rem;" data-el="menu-class-badge"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0.2rem;padding-top:0.45rem;">
+            <button type="button" id="btn-profile-admin" class="menu-option">
+              <span class="material-symbols-outlined" style="font-size:1rem;color:var(--primary);">admin_panel_settings</span>
+              <span data-el="menu-admin-label"></span>
+            </button>
+            <button type="button" id="btn-header-signout" class="menu-option" style="color:var(--error);">
+              <span class="material-symbols-outlined" style="font-size:1rem;">logout</span>
+              <span data-el="menu-signout-label"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+</template>
+
+<template id="tpl-header-notif-item">
+  <div style="padding:0.6rem 0;border-bottom:1px solid var(--surface-container-low);">
+    <div class="flex-between" style="gap:0.4rem;">
+      <span style="font-size:0.76rem;font-weight:700;display:flex;align-items:center;gap:0.35rem;">
+        <span style="width:0.4rem;height:0.4rem;border-radius:50%;background:var(--primary);display:inline-block;" data-el="unread-dot" hidden></span>
+        <span data-el="notif-item-title"></span>
+      </span>
+      <span style="font-size:0.66rem;color:var(--outline);" data-el="notif-item-time"></span>
+    </div>
+    <p class="text-xs muted" style="margin:0.2rem 0 0;line-height:1.4;" data-el="notif-item-desc"></p>
+  </div>
+</template>

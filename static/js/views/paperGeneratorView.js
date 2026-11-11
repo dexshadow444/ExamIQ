@@ -1,5 +1,6 @@
 import { apiClient } from '../api/client.js';
-import { appState, escapeHtml, showToast, t, triggerRender } from '../state.js';
+import { appState, showToast, t, triggerRender } from '../state.js';
+import { cloneTemplate, qs, setText, setVisible } from '../utils/dom.js';
 
 const QUESTION_VARIANTS = {
   1: {
@@ -26,282 +27,143 @@ const QUESTION_VARIANTS = {
 };
 
 export function renderPaperGeneratorView() {
+  const root = cloneTemplate('tpl-paper-generator');
   const cfg = appState.paperConfig;
   const paper = appState.generatedPaper;
   const taughtCount = appState.chapters.filter((c) => c.status === 'completed' || c.status === 'partially_completed').length;
 
-  return `
-    <div class="page-container">
-      <header class="flex-between" style="align-items:flex-start;">
-        <div>
-          <div class="flex-row">
-            <h1 class="page-title">${t('AI Question Paper Generator', 'AI வினாத்தாள் உருவாக்கி')}</h1>
-            <span class="badge badge-primary">HSC Blueprint Engine</span>
-          </div>
-          <p class="page-subtitle">Automated examination authoring respecting the Teaching Progress Lock, with official TN Board section rubrics.</p>
-        </div>
+  setText(root, '[data-el="page-title"]', t('AI Question Paper Generator', 'AI வினாத்தாள் உருவாக்கி'));
+  setVisible(root, '[data-el="export-actions"]', Boolean(paper));
+  setText(root, '[data-el="print-label"]', t('Print / Export PDF', 'அச்சிடு / PDF ஏற்றுமதி'));
+  setText(root, '[data-el="docx-label"]', t('DOCX Export', 'DOCX ஏற்றுமதி'));
 
-        ${
-          paper
-            ? `
-          <div class="flex-row no-print" style="justify-content:flex-end;">
-            <button type="button" id="btn-print-paper" class="btn btn-surface">
-              <span class="material-symbols-outlined" style="font-size:1rem;">print</span>
-              <span>${t('Print / Export PDF', 'அச்சிடு / PDF ஏற்றுமதி')}</span>
-            </button>
-            <button type="button" id="btn-export-docx" class="btn btn-surface">
-              <span class="material-symbols-outlined" style="font-size:1rem;">description</span>
-              <span>${t('DOCX Export', 'DOCX ஏற்றுமதி')}</span>
-            </button>
-          </div>
-        `
-            : ''
-        }
-      </header>
+  const banner = qs(root, '[data-el="lock-banner"]');
+  if (banner) {
+    banner.style.background = appState.progressLockActive ? 'rgba(109, 245, 225, 0.18)' : 'rgba(255, 218, 214, 0.45)';
+    banner.style.borderColor = appState.progressLockActive ? 'var(--secondary-container)' : 'var(--error-container)';
+  }
+  const bannerIcon = qs(root, '[data-el="lock-banner-icon"]');
+  if (bannerIcon) {
+    bannerIcon.textContent = appState.progressLockActive ? 'shield_lock' : 'warning';
+    bannerIcon.style.color = appState.progressLockActive ? 'var(--secondary)' : 'var(--error)';
+  }
+  setText(root, '[data-el="lock-banner-title"]', appState.progressLockActive ? 'Teaching Progress Lock Enforced (Rule 1 Active)' : 'Warning: Progress Lock is Disabled');
+  setText(root, '[data-el="lock-banner-desc"]', appState.progressLockActive
+    ? 'Only verified taught units (Ch 1, 2, 3, and 4.1-4.2) will be drawn for this examination.'
+    : 'Questions may be chosen from untaught syllabus topics.');
+  const lockBadge = qs(root, '[data-el="lock-banner-badge"]');
+  if (lockBadge) {
+    lockBadge.className = `badge font-mono ${appState.progressLockActive ? 'badge-secondary' : 'badge-error'}`;
+    lockBadge.textContent = appState.progressLockActive ? 'UNTAUGHT EXCLUDED' : 'LOCK BYPASSED';
+  }
 
-      <div class="card flex-between no-print" style="background:${appState.progressLockActive ? 'rgba(109, 245, 225, 0.18)' : 'rgba(255, 218, 214, 0.45)'};border-color:${appState.progressLockActive ? 'var(--secondary-container)' : 'var(--error-container)'};">
-        <div class="flex-row" style="gap:0.75rem;">
-          <span class="material-symbols-outlined" style="font-size:1.6rem;color:${appState.progressLockActive ? 'var(--secondary)' : 'var(--error)'};">
-            ${appState.progressLockActive ? 'shield_lock' : 'warning'}
-          </span>
-          <div>
-            <div class="text-xs" style="font-weight:700;">
-              ${appState.progressLockActive ? 'Teaching Progress Lock Enforced (Rule 1 Active)' : 'Warning: Progress Lock is Disabled'}
-            </div>
-            <div class="text-xs muted">
-              ${appState.progressLockActive ? 'Only verified taught units (Ch 1, 2, 3, and 4.1-4.2) will be drawn for this examination.' : 'Questions may be chosen from untaught syllabus topics.'}
-            </div>
-          </div>
-        </div>
-        <span class="badge font-mono ${appState.progressLockActive ? 'badge-secondary' : 'badge-error'}">
-          ${appState.progressLockActive ? 'UNTAUGHT EXCLUDED' : 'LOCK BYPASSED'}
-        </span>
-      </div>
+  setText(root, '[data-el="label-title"]', t('Paper Heading / Title', 'வினாத்தாள் தலைப்பு'));
+  qs(root, '#pg-title').value = cfg.title;
+  setText(root, '[data-el="label-marks"]', t('Total Marks', 'மொத்த மதிப்பெண்கள்'));
+  qs(root, '#pg-marks').value = String(cfg.totalMarks);
+  setText(root, '[data-el="label-duration"]', t('Duration', 'கால அளவு'));
+  qs(root, '#pg-duration').value = String(cfg.durationMinutes);
+  setText(root, '[data-el="label-language"]', t('Output Language', 'வெளியீட்டு மொழி'));
+  qs(root, '#pg-language').value = cfg.language;
 
-      <div class="grid grid-12" style="gap:1.25rem;align-items:start;">
-        <div class="card col-span-4 flex-col no-print" style="gap:0.9rem;">
-          <h2 class="section-title" style="padding-bottom:0.55rem;border-bottom:1px solid var(--surface-container);">Blueprint &amp; Examination Settings</h2>
+  setText(root, '#pg-ratio-label', `${cfg.bookBackRatio}%`);
+  qs(root, '#pg-ratio').value = String(cfg.bookBackRatio);
+  qs(root, '#pg-public').checked = Boolean(cfg.includePublicExamQuestions);
 
-          <div>
-            <label class="field-label">${t('Paper Heading / Title', 'வினாத்தாள் தலைப்பு')}</label>
-            <input id="pg-title" class="input" value="${escapeHtml(cfg.title)}" />
-          </div>
+  qs(root, '#btn-generate-paper').disabled = Boolean(appState.paperGenerating);
+  setVisible(root, '[data-el="gen-spinner"]', appState.paperGenerating);
+  setVisible(root, '[data-el="gen-icon"]', !appState.paperGenerating);
+  setText(root, '[data-el="gen-label"]', appState.paperGenerating
+    ? 'Synthesizing Question Paper...'
+    : t('Generate Test Paper', 'தேர்வு வினாத்தாளை உருவாக்கு'));
 
-          <div class="grid grid-2" style="gap:0.65rem;">
-            <div>
-              <label class="field-label">${t('Total Marks', 'மொத்த மதிப்பெண்கள்')}</label>
-              <select id="pg-marks" class="select">
-                <option value="10" ${cfg.totalMarks === 10 ? 'selected' : ''}>10 Marks (Slip Test)</option>
-                <option value="20" ${cfg.totalMarks === 20 ? 'selected' : ''}>20 Marks (Unit Test)</option>
-                <option value="25" ${cfg.totalMarks === 25 ? 'selected' : ''}>25 Marks (Class Test)</option>
-                <option value="50" ${cfg.totalMarks === 50 ? 'selected' : ''}>50 Marks (Mid-Term)</option>
-                <option value="70" ${cfg.totalMarks === 70 ? 'selected' : ''}>70 Marks (Revision)</option>
-                <option value="90" ${cfg.totalMarks === 90 ? 'selected' : ''}>90 Marks (Public Pattern)</option>
-              </select>
-            </div>
-            <div>
-              <label class="field-label">${t('Duration', 'கால அளவு')}</label>
-              <select id="pg-duration" class="select">
-                <option value="45" ${cfg.durationMinutes === 45 ? 'selected' : ''}>45 Minutes</option>
-                <option value="60" ${cfg.durationMinutes === 60 ? 'selected' : ''}>60 Minutes</option>
-                <option value="90" ${cfg.durationMinutes === 90 ? 'selected' : ''}>90 Minutes (1.5 Hours)</option>
-                <option value="150" ${cfg.durationMinutes === 150 ? 'selected' : ''}>150 Minutes (2.5 Hours)</option>
-                <option value="180" ${cfg.durationMinutes === 180 ? 'selected' : ''}>180 Minutes (3.0 Hours)</option>
-              </select>
-            </div>
-          </div>
+  setVisible(root, '[data-el="empty-state"]', !paper && !appState.paperGenerating);
+  setText(root, '#btn-quick-demo-paper', `Quick Demo: Generate ${cfg.totalMarks}-Mark Mid-Term`);
 
-          <div>
-            <label class="field-label" for="pg-language">${t('Output Language', 'வெளியீட்டு மொழி')}</label>
-            <select id="pg-language" class="select">
-              <option value="bilingual" ${cfg.language === 'bilingual' ? 'selected' : ''}>Bilingual (English &amp; தமிழ்)</option>
-              <option value="en" ${cfg.language === 'en' ? 'selected' : ''}>English Only</option>
-              <option value="ta" ${cfg.language === 'ta' ? 'selected' : ''}>தமிழ் Only (Tamil Medium)</option>
-            </select>
-          </div>
+  setVisible(root, '[data-el="loading-state"]', appState.paperGenerating);
+  setText(root, '[data-el="loading-title"]', `Validating against Teaching Progress Lock (${taughtCount} eligible units)...`);
 
-          <div>
-            <div class="flex-between text-xs" style="margin-bottom:0.25rem;">
-              <strong>Book-Back Questions Ratio</strong>
-              <strong class="font-mono" style="color:var(--primary);" id="pg-ratio-label">${cfg.bookBackRatio}%</strong>
-            </div>
-            <input id="pg-ratio" type="range" min="20" max="90" step="10" value="${cfg.bookBackRatio}" style="width:100%;accent-color:var(--primary);" />
-            <div class="flex-between" style="font-size:0.68rem;color:var(--outline);">
-              <span>20% (More HOTS)</span>
-              <span>60% (TN Average)</span>
-              <span>90% (Foundation)</span>
-            </div>
-          </div>
+  const hasPaper = Boolean(paper && !appState.paperGenerating);
+  setVisible(root, '[data-el="paper-card"]', hasPaper);
+  if (hasPaper) {
+    qs(root, '#tab-paper-view')?.classList.toggle('active-white', appState.paperPreviewTab === 'paper');
+    qs(root, '#tab-rubric-view')?.classList.toggle('active-white', appState.paperPreviewTab === 'rubric');
+    setText(root, '[data-el="paper-id"]', paper.paperId);
 
-          <label class="soft-panel flex-row" style="align-items:flex-start;flex-wrap:nowrap;cursor:pointer;">
-            <input id="pg-public" type="checkbox" ${cfg.includePublicExamQuestions ? 'checked' : ''} style="margin-top:0.2rem;" />
-            <div class="text-xs">
-              <strong>Draw from 5-Year Public Exam Papers</strong>
-              <div class="muted" style="font-size:0.7rem;">Prioritize frequently repeated questions from 2019–2024</div>
-            </div>
-          </label>
+    const isPaperPane = appState.paperPreviewTab === 'paper';
+    setVisible(root, '[data-el="paper-pane"]', isPaperPane);
+    setVisible(root, '[data-el="rubric-pane"]', !isPaperPane);
 
-          <button type="button" id="btn-generate-paper" class="btn btn-primary" style="width:100%;padding:0.75rem;" ${appState.paperGenerating ? 'disabled' : ''}>
-            ${
-              appState.paperGenerating
-                ? '<span class="spinner"></span><span>Synthesizing Question Paper...</span>'
-                : `<span class="material-symbols-outlined" style="font-size:1.05rem;">auto_awesome</span><span>${t('Generate Test Paper', 'தேர்வு வினாத்தாளை உருவாக்கு')}</span>`
-            }
-          </button>
-        </div>
+    if (isPaperPane) {
+      setText(root, '[data-el="paper-title"]', paper.title);
+      setText(root, '[data-el="paper-meta"]', `Subject: Mathematics / கணிதம் • Max Marks: ${paper.totalMarks} • Time: ${paper.durationMinutes} Minutes`);
+      const secWrap = qs(root, '[data-el="paper-sections"]');
+      paper.sections.forEach((sec) => {
+        const secEl = cloneTemplate('tpl-pg-section');
+        setText(secEl, '[data-el="sec-name"]', sec.name);
+        setText(secEl, '[data-el="sec-instructions"]', sec.instructions);
+        const qList = qs(secEl, '[data-el="sec-questions"]');
 
-        <div class="col-span-8">
-          ${
-            !paper && !appState.paperGenerating
-              ? `
-            <div class="card" style="padding:3rem 1.5rem;text-align:center;min-height:26rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;">
-              <div style="width:4rem;height:4rem;border-radius:1rem;background:var(--primary-fixed);color:var(--primary);display:flex;align-items:center;justify-content:center;">
-                <span class="material-symbols-outlined" style="font-size:2rem;">assignment_add</span>
-              </div>
-              <h3 style="margin:0;font-size:1.05rem;">Ready to Generate Examination</h3>
-              <p class="text-xs muted" style="max-width:26rem;margin:0;line-height:1.5;">
-                Configure duration, marks, and book-back ratio on the left. Click "Generate Test Paper" to create an authentic TN State Board question paper.
-              </p>
-              <button type="button" id="btn-quick-demo-paper" class="btn btn-primary" style="margin-top:0.4rem;">
-                Quick Demo: Generate ${cfg.totalMarks}-Mark Mid-Term
-              </button>
-            </div>
-          `
-              : ''
+        sec.questions.forEach((q) => {
+          const qEl = cloneTemplate('tpl-pg-question');
+          const isLocked = appState.lockedPaperQuestions.includes(q.no);
+          setText(qEl, '[data-el="q-no"]', `${q.no}.`);
+          setVisible(qEl, '[data-el="q-en"]', cfg.language !== 'ta');
+          setText(qEl, '[data-el="q-en"]', q.textEn);
+          setVisible(qEl, '[data-el="q-ta"]', cfg.language !== 'en');
+          setText(qEl, '[data-el="q-ta"]', q.textTa);
+
+          const optsEl = qs(qEl, '[data-el="q-options"]');
+          setVisible(qEl, '[data-el="q-options"]', Boolean(q.options));
+          if (q.options) {
+            q.options.forEach((opt, i) => {
+              const oEl = cloneTemplate('tpl-pg-mcq-opt');
+              setText(oEl, '[data-el="opt-text"]', `(${String.fromCharCode(97 + i)}) ${opt}`);
+              optsEl.appendChild(oEl);
+            });
           }
 
-          ${
-            appState.paperGenerating
-              ? `
-            <div class="card" style="padding:3.5rem 1.5rem;text-align:center;min-height:26rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;">
-              <span class="spinner spinner-lg"></span>
-              <div style="font-size:0.95rem;font-weight:700;">Validating against Teaching Progress Lock (${taughtCount} eligible units)...</div>
-              <div class="text-xs muted">Excluding untaught topics • Balancing difficulty distribution • Generating Tamil &amp; English keys</div>
-            </div>
-          `
-              : ''
+          setText(qEl, '[data-el="q-marks"]', `[${q.marks}]`);
+
+          const swapBtn = qs(qEl, '[data-el="btn-swap"]');
+          if (swapBtn) {
+            swapBtn.setAttribute('data-swap-q', String(q.no));
+            swapBtn.disabled = isLocked;
+            swapBtn.style.color = isLocked ? 'var(--outline)' : 'var(--primary)';
           }
-
-          ${
-            paper && !appState.paperGenerating
-              ? `
-            <div class="card" style="padding:0;overflow:hidden;">
-              <div class="flex-between no-print" style="padding:0.75rem 1rem;border-bottom:1px solid var(--surface-container);background:rgba(242,243,255,0.5);">
-                <div class="segmented-pill">
-                  <button type="button" id="tab-paper-view" class="segmented-btn ${appState.paperPreviewTab === 'paper' ? 'active-white' : ''}">Question Paper View</button>
-                  <button type="button" id="tab-rubric-view" class="segmented-btn ${appState.paperPreviewTab === 'rubric' ? 'active-white' : ''}">Official Marking Scheme &amp; Answer Keys</button>
-                </div>
-                <span class="font-mono text-xs muted">${escapeHtml(paper.paperId)}</span>
-              </div>
-
-              ${
-                appState.paperPreviewTab === 'paper'
-                  ? `
-                <div style="padding:1.75rem;display:flex;flex-direction:column;gap:1.35rem;">
-                  <div style="text-align:center;padding-bottom:1rem;border-bottom:2px solid var(--on-surface);">
-                    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--outline);">
-                      GOVERNMENT OF TAMIL NADU • DEPARTMENT OF SCHOOL EDUCATION
-                    </div>
-                    <h2 style="margin:0.3rem 0;font-size:1.15rem;font-weight:800;">${escapeHtml(paper.title)}</h2>
-                    <div class="text-xs muted" style="font-weight:600;">
-                      Subject: Mathematics / கணிதம் • Max Marks: ${paper.totalMarks} • Time: ${paper.durationMinutes} Minutes
-                    </div>
-                  </div>
-
-                  ${paper.sections
-                    .map(
-                      (sec) => `
-                    <div class="flex-col" style="gap:0.8rem;">
-                      <div class="soft-panel flex-between" style="padding:0.45rem 0.8rem;">
-                        <strong class="text-xs" style="text-transform:uppercase;">${escapeHtml(sec.name)}</strong>
-                        <span class="text-xs muted" style="font-style:italic;">${escapeHtml(sec.instructions)}</span>
-                      </div>
-                      ${sec.questions
-                        .map((q) => {
-                          const isLocked = appState.lockedPaperQuestions.includes(q.no);
-                          return `
-                        <div style="padding-left:0.4rem;">
-                          <div class="flex-between" style="align-items:flex-start;flex-wrap:nowrap;">
-                            <div class="flex-row" style="align-items:flex-start;flex-wrap:nowrap;flex:1;">
-                              <strong class="text-xs">${q.no}.</strong>
-                              <div class="flex-col" style="gap:0.25rem;flex:1;">
-                                ${cfg.language !== 'ta' ? `<div class="text-xs" style="white-space:pre-line;">${escapeHtml(q.textEn)}</div>` : ''}
-                                ${cfg.language !== 'en' ? `<div class="text-xs font-tamil muted" style="white-space:pre-line;">${escapeHtml(q.textTa)}</div>` : ''}
-                                ${
-                                  q.options
-                                    ? `
-                                  <div class="grid grid-4" style="gap:0.4rem;margin-top:0.25rem;">
-                                    ${q.options
-                                      .map(
-                                        (opt, i) => `
-                                      <div class="soft-panel font-mono" style="padding:0.3rem 0.5rem;font-size:0.7rem;">(${String.fromCharCode(97 + i)}) ${escapeHtml(opt)}</div>
-                                    `
-                                      )
-                                      .join('')}
-                                  </div>
-                                `
-                                    : ''
-                                }
-                              </div>
-                            </div>
-                            <strong class="text-xs">[${q.marks}]</strong>
-                          </div>
-                          <div class="flex-row no-print" style="padding-left:1.1rem;margin-top:0.25rem;font-size:0.7rem;">
-                            <button type="button" class="btn-ghost" style="border:none;color:${isLocked ? 'var(--outline)' : 'var(--primary)'};padding:0.15rem 0.3rem;" data-swap-q="${q.no}" ${isLocked ? 'disabled' : ''}>
-                              <span class="material-symbols-outlined" style="font-size:0.85rem;">sync</span> Swap variant
-                            </button>
-                            <button type="button" class="btn-ghost" style="border:none;color:${isLocked ? 'var(--error)' : 'var(--secondary)'};padding:0.15rem 0.3rem;font-weight:${isLocked ? '700' : '600'};" data-lock-q="${q.no}">
-                              <span class="material-symbols-outlined" style="font-size:0.85rem;">${isLocked ? 'lock' : 'lock_open'}</span> ${isLocked ? 'Locked (Unlock)' : 'Lock Question'}
-                            </button>
-                          </div>
-                        </div>
-                      `;
-                        })
-                        .join('')}
-                    </div>
-                  `
-                    )
-                    .join('')}
-                </div>
-              `
-                  : `
-                <div style="padding:1.5rem;display:flex;flex-direction:column;gap:0.9rem;">
-                  <div class="badge badge-secondary" style="padding:0.65rem 0.85rem;border-radius:0.75rem;">
-                    <span class="material-symbols-outlined fill" style="font-size:1rem;">verified</span>
-                    <span>Official Stepwise Scoring Rubrics for Evaluators according to DGE TN Guidelines.</span>
-                  </div>
-                  ${paper.sections
-                    .map(
-                      (sec) => `
-                    <div class="card" style="box-shadow:none;">
-                      <div class="text-xs" style="font-weight:700;color:var(--primary);margin-bottom:0.5rem;text-transform:uppercase;">${escapeHtml(sec.name)}</div>
-                      <div class="flex-col" style="gap:0.4rem;">
-                        ${sec.questions
-                          .map(
-                            (q) => `
-                          <div class="flex-between text-xs" style="padding:0.35rem 0;border-bottom:1px solid var(--surface-container-low);gap:0.75rem;">
-                            <span style="flex:1;"><strong>Q.${q.no}</strong> ${escapeHtml(q.chapter || q.type)} — ${escapeHtml(q.answer || 'Stepwise solution key verified')}</span>
-                            <strong class="font-mono" style="color:var(--secondary);">${q.marks} M</strong>
-                          </div>
-                        `
-                          )
-                          .join('')}
-                      </div>
-                    </div>
-                  `
-                    )
-                    .join('')}
-                </div>
-              `
-              }
-            </div>
-          `
-              : ''
+          const lockBtn = qs(qEl, '[data-el="btn-lock"]');
+          if (lockBtn) {
+            lockBtn.setAttribute('data-lock-q', String(q.no));
+            lockBtn.style.color = isLocked ? 'var(--error)' : 'var(--secondary)';
+            lockBtn.style.fontWeight = isLocked ? '700' : '600';
           }
-        </div>
-      </div>
-    </div>
-  `;
+          setText(qEl, '[data-el="lock-icon"]', isLocked ? 'lock' : 'lock_open');
+          setText(qEl, '[data-el="lock-text"]', isLocked ? 'Locked (Unlock)' : 'Lock Question');
+
+          qList.appendChild(qEl);
+        });
+
+        secWrap.appendChild(secEl);
+      });
+    } else {
+      const rubWrap = qs(root, '[data-el="rubric-sections"]');
+      paper.sections.forEach((sec) => {
+        const rsEl = cloneTemplate('tpl-pg-rubric-section');
+        setText(rsEl, '[data-el="sec-name"]', sec.name);
+        const rowsWrap = qs(rsEl, '[data-el="rubric-rows"]');
+        sec.questions.forEach((q) => {
+          const rowEl = cloneTemplate('tpl-pg-rubric-row');
+          setText(rowEl, '[data-el="q-no"]', `Q.${q.no}`);
+          setText(rowEl, '[data-el="q-detail"]', `${q.chapter || q.type} — ${q.answer || 'Stepwise solution key verified'}`);
+          setText(rowEl, '[data-el="q-marks"]', `${q.marks} M`);
+          rowsWrap.appendChild(rowEl);
+        });
+        rubWrap.appendChild(rsEl);
+      });
+    }
+  }
+
+  return root;
 }
 
 export function bindPaperGeneratorEvents() {
@@ -406,6 +268,7 @@ export function bindPaperGeneratorEvents() {
       triggerRender();
     });
   });
+
   document.querySelectorAll('[data-lock-q]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const qNo = Number(btn.getAttribute('data-lock-q'));

@@ -1,0 +1,68 @@
+<template id="tpl-sidebar">
+  <div class="sidebar-wrapper">
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-brand">
+          <div class="brand-logo-box">IQ</div>
+          <div style="min-width:0;">
+            <div class="brand-title">JM Vertex ExamIQ</div>
+            <div class="brand-subtitle">TN State Board Cl. 12</div>
+          </div>
+        </div>
+
+        <div class="sidebar-class-box">
+          <div class="class-selector-pill">
+            <div class="flex-row" style="gap:0.35rem;flex-wrap:nowrap;min-width:0;flex:1;">
+              <span class="material-symbols-outlined" style="color:var(--secondary);font-size:1.05rem;flex-shrink:0;">school</span>
+              <select id="sidebar-class-select" class="class-select" aria-label="Select active class"></select>
+            </div>
+            <span class="ay-badge" data-el="ay-badge"></span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Main navigation">
+        <div data-el="dashboard-slot"></div>
+        <div class="nav-groups-wrap" data-el="groups-slot"></div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="flex-between" style="gap:0.4rem;">
+          <div class="flex-row" style="gap:0.35rem;color:var(--secondary);font-size:0.72rem;font-weight:700;">
+            <span class="material-symbols-outlined" style="font-size:0.95rem;">verified</span>
+            <span data-el="engine-label"></span>
+          </div>
+          <span class="badge badge-secondary font-mono" style="font-size:0.6rem;" data-el="api-mode-badge"></span>
+        </div>
+        <button id="btn-signout" type="button" class="btn-signout">
+          <span class="material-symbols-outlined" style="font-size:0.95rem;">logout</span>
+          <span data-el="signout-label"></span>
+        </button>
+      </div>
+    </aside>
+  </div>
+</template>
+
+<template id="tpl-sidebar-group">
+  <div class="nav-group">
+    <button type="button" class="nav-group-trigger">
+      <span class="nav-item-left">
+        <span class="material-symbols-outlined" style="font-size:1.05rem;" data-el="group-icon"></span>
+        <span class="nav-item-label" data-el="group-label"></span>
+      </span>
+      <span class="material-symbols-outlined nav-group-chevron" data-el="group-chevron"></span>
+    </button>
+    <div class="nav-group-items" data-el="group-items" hidden></div>
+  </div>
+</template>
+
+<template id="tpl-sidebar-nav-item">
+  <button type="button" class="nav-item">
+    <span class="nav-item-left">
+      <span class="material-symbols-outlined" style="font-size:1.05rem;" data-el="item-icon"></span>
+      <span class="nav-item-label" data-el="item-label"></span>
+    </span>
+    <span class="badge" style="font-size:0.6rem;padding:0.12rem 0.4rem;" data-el="item-badge" hidden></span>
+  </button>
+</template>

@@ -12,6 +12,7 @@ import {
 } from './data/mockData.js';
 import { getApiMode, setApiMode } from './api/client.js';
 import { API_ENDPOINTS } from './api/endpoints.js';
+import { clearChildren, cloneTemplate, qs, setText } from './utils/dom.js';
 
 const clone = (obj) => JSON.parse(JSON.stringify(obj));
 
@@ -198,29 +199,21 @@ export const renderToasts = () => {
     info: 'info',
     warning: 'warning'
   };
-  root.innerHTML = appState.toasts
-    .map(
-      (t) => `
-      <div class="toast toast-${escapeHtml(t.type)}">
-        <div class="flex-row" style="gap:0.45rem;flex-wrap:nowrap;">
-          <span class="material-symbols-outlined" style="font-size:1.1rem;">${iconNames[t.type] || 'info'}</span>
-          <span>${escapeHtml(t.message)}</span>
-        </div>
-        <button type="button" data-dismiss-toast="${escapeHtml(t.id)}" style="border:none;background:transparent;color:inherit;opacity:0.8;padding:0;display:flex;">
-          <span class="material-symbols-outlined" style="font-size:1rem;">close</span>
-        </button>
-      </div>
-    `
-    )
-    .join('');
 
-  root.querySelectorAll('[data-dismiss-toast]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-dismiss-toast');
-      appState.toasts = appState.toasts.filter((t) => String(t.id) !== String(id));
+  clearChildren(root);
+  const frag = document.createDocumentFragment();
+  appState.toasts.forEach((toast) => {
+    const el = cloneTemplate('tpl-toast');
+    el.classList.add(`toast-${toast.type}`);
+    setText(el, '[data-el="toast-icon"]', iconNames[toast.type] || 'info');
+    setText(el, '[data-el="toast-msg"]', toast.message);
+    qs(el, '[data-dismiss-toast]')?.addEventListener('click', () => {
+      appState.toasts = appState.toasts.filter((t) => String(t.id) !== String(toast.id));
       renderToasts();
     });
+    frag.appendChild(el);
   });
+  root.appendChild(frag);
 };
 
 export const escapeHtml = (value) => {

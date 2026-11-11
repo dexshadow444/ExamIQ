@@ -1,0 +1,87 @@
+<template id="tpl-remedial-learning">
+  <div class="page-container">
+    <header class="flex-between" style="align-items:flex-start;">
+      <div>
+        <div class="flex-row">
+          <h1 class="page-title" data-el="page-title"></h1>
+          <span class="badge badge-secondary">Core Differentiator</span>
+        </div>
+        <p class="page-subtitle">Targeted micro-remedial drills, foundation practice questions, and bilingual worked solutions generated from diagnosed gaps.</p>
+      </div>
+
+      <button type="button" id="btn-gen-remedial" class="btn btn-primary">
+        <span class="spinner" data-el="gen-spinner" hidden></span>
+        <span class="material-symbols-outlined" style="font-size:1rem;" data-el="gen-icon">auto_awesome</span>
+        <span data-el="gen-label"></span>
+      </button>
+    </header>
+
+    <div class="card flex-between">
+      <div>
+        <label class="field-label" data-el="concept-label"></label>
+        <select id="remedial-concept-select" class="select" style="min-width:20rem;"></select>
+      </div>
+      <div class="flex-row">
+        <span class="badge badge-tertiary" style="padding:0.45rem 0.75rem;" data-el="flagged-badge"></span>
+        <span class="badge badge-secondary" style="padding:0.45rem 0.75rem;">Pacing: Period 3 Tomorrow</span>
+      </div>
+    </div>
+
+    <section class="card card-lg flex-col" style="gap:1.15rem;" data-el="drill-card" hidden>
+      <div class="flex-between" style="padding-bottom:0.75rem;border-bottom:1px solid var(--surface-container);">
+        <div>
+          <span class="badge badge-primary" data-el="drill-id"></span>
+          <h2 style="margin:0.4rem 0 0;font-size:1.05rem;font-weight:700;" data-el="drill-title"></h2>
+        </div>
+        <div style="text-align:right;">
+          <div class="text-xs" style="font-weight:700;color:var(--secondary);" data-el="drill-time"></div>
+          <div class="text-xs muted" data-el="drill-target"></div>
+        </div>
+      </div>
+
+      <div class="soft-panel flex-col" style="gap:0.55rem;">
+        <div class="flex-row text-xs" style="font-weight:700;color:var(--primary);">
+          <span class="material-symbols-outlined" style="font-size:1rem;">lightbulb</span>
+          <span data-el="worked-title"></span>
+        </div>
+        <div class="card font-mono text-xs" style="padding:0.55rem 0.75rem;color:var(--secondary);font-weight:700;box-shadow:none;" data-el="worked-formula"></div>
+        <p class="text-xs" style="margin:0;line-height:1.5;" data-el="worked-en"></p>
+        <p class="text-xs font-tamil muted" style="margin:0;line-height:1.55;" data-el="worked-ta"></p>
+      </div>
+
+      <div class="flex-col" style="gap:0.75rem;">
+        <div class="text-xs" style="font-weight:700;text-transform:uppercase;">Practice Question Set (Foundation &amp; Progression)</div>
+        <div class="flex-col" style="gap:0.75rem;" data-el="practice-list"></div>
+      </div>
+
+      <div class="flex-between no-print" style="padding-top:0.65rem;border-top:1px solid var(--surface-container);">
+        <button type="button" id="btn-print-remedial" class="btn btn-ghost" style="color:var(--primary);padding-left:0;">
+          <span class="material-symbols-outlined" style="font-size:1rem;">print</span>
+          <span data-el="print-label"></span>
+        </button>
+        <button type="button" id="btn-dispatch-remedial" class="btn btn-secondary">Dispatch to Student App</button>
+      </div>
+    </section>
+
+    <section class="card" style="padding:3rem 1.5rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:0.55rem;" data-el="empty-card" hidden>
+      <span class="material-symbols-outlined" style="font-size:2.5rem;color:var(--primary);">assignment_late</span>
+      <h3 style="margin:0;font-size:1rem;" data-el="empty-title"></h3>
+      <p class="text-xs muted" style="max-width:24rem;margin:0 0 0.5rem;">
+        Select a target diagnosed concept above and click "Generate 15-Min Micro Drill" to create differentiated practice problems.
+      </p>
+      <button type="button" id="btn-sample-remedial" class="btn btn-primary">Generate Sample Drill for Vignesh &amp; Cohort</button>
+    </section>
+  </div>
+</template>
+
+<template id="tpl-remedial-question">
+  <div class="card" style="box-shadow:none;display:flex;flex-direction:column;gap:0.4rem;">
+    <div class="flex-between">
+      <strong class="text-xs" style="color:var(--primary);" data-el="ex-no"></strong>
+      <span class="font-mono text-xs muted" data-el="ex-marks"></span>
+    </div>
+    <div class="text-xs" data-el="ex-en"></div>
+    <div class="text-xs font-tamil muted" data-el="ex-ta"></div>
+    <div class="font-mono text-xs" style="padding-top:0.45rem;border-top:1px solid var(--surface-container-low);color:var(--secondary);" data-el="ex-answer"></div>
+  </div>
+</template>

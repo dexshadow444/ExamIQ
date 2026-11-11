@@ -1,0 +1,207 @@
+<template id="tpl-paper-generator">
+  <div class="page-container">
+    <header class="flex-between" style="align-items:flex-start;">
+      <div>
+        <div class="flex-row">
+          <h1 class="page-title" data-el="page-title"></h1>
+          <span class="badge badge-primary">HSC Blueprint Engine</span>
+        </div>
+        <p class="page-subtitle">Automated examination authoring respecting the Teaching Progress Lock, with official TN Board section rubrics.</p>
+      </div>
+
+      <div class="flex-row no-print" style="justify-content:flex-end;" data-el="export-actions" hidden>
+        <button type="button" id="btn-print-paper" class="btn btn-surface">
+          <span class="material-symbols-outlined" style="font-size:1rem;">print</span>
+          <span data-el="print-label"></span>
+        </button>
+        <button type="button" id="btn-export-docx" class="btn btn-surface">
+          <span class="material-symbols-outlined" style="font-size:1rem;">description</span>
+          <span data-el="docx-label"></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="card flex-between no-print" data-el="lock-banner">
+      <div class="flex-row" style="gap:0.75rem;">
+        <span class="material-symbols-outlined" style="font-size:1.6rem;" data-el="lock-banner-icon"></span>
+        <div>
+          <div class="text-xs" style="font-weight:700;" data-el="lock-banner-title"></div>
+          <div class="text-xs muted" data-el="lock-banner-desc"></div>
+        </div>
+      </div>
+      <span class="badge font-mono" data-el="lock-banner-badge"></span>
+    </div>
+
+    <div class="grid grid-12" style="gap:1.25rem;align-items:start;">
+      <div class="card col-span-4 flex-col no-print" style="gap:0.9rem;">
+        <h2 class="section-title" style="padding-bottom:0.55rem;border-bottom:1px solid var(--surface-container);">Blueprint &amp; Examination Settings</h2>
+
+        <div>
+          <label class="field-label" data-el="label-title"></label>
+          <input id="pg-title" class="input" />
+        </div>
+
+        <div class="grid grid-2" style="gap:0.65rem;">
+          <div>
+            <label class="field-label" data-el="label-marks"></label>
+            <select id="pg-marks" class="select">
+              <option value="10">10 Marks (Slip Test)</option>
+              <option value="20">20 Marks (Unit Test)</option>
+              <option value="25">25 Marks (Class Test)</option>
+              <option value="50">50 Marks (Mid-Term)</option>
+              <option value="70">70 Marks (Revision)</option>
+              <option value="90">90 Marks (Public Pattern)</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" data-el="label-duration"></label>
+            <select id="pg-duration" class="select">
+              <option value="45">45 Minutes</option>
+              <option value="60">60 Minutes</option>
+              <option value="90">90 Minutes (1.5 Hours)</option>
+              <option value="150">150 Minutes (2.5 Hours)</option>
+              <option value="180">180 Minutes (3.0 Hours)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="field-label" for="pg-language" data-el="label-language"></label>
+          <select id="pg-language" class="select">
+            <option value="bilingual">Bilingual (English &amp; தமிழ்)</option>
+            <option value="en">English Only</option>
+            <option value="ta">தமிழ் Only (Tamil Medium)</option>
+          </select>
+        </div>
+
+        <div>
+          <div class="flex-between text-xs" style="margin-bottom:0.25rem;">
+            <strong>Book-Back Questions Ratio</strong>
+            <strong class="font-mono" style="color:var(--primary);" id="pg-ratio-label"></strong>
+          </div>
+          <input id="pg-ratio" type="range" min="20" max="90" step="10" style="width:100%;accent-color:var(--primary);" />
+          <div class="flex-between" style="font-size:0.68rem;color:var(--outline);">
+            <span>20% (More HOTS)</span>
+            <span>60% (TN Average)</span>
+            <span>90% (Foundation)</span>
+          </div>
+        </div>
+
+        <label class="soft-panel flex-row" style="align-items:flex-start;flex-wrap:nowrap;cursor:pointer;">
+          <input id="pg-public" type="checkbox" style="margin-top:0.2rem;" />
+          <div class="text-xs">
+            <strong>Draw from 5-Year Public Exam Papers</strong>
+            <div class="muted" style="font-size:0.7rem;">Prioritize frequently repeated questions from 2019–2024</div>
+          </div>
+        </label>
+
+        <button type="button" id="btn-generate-paper" class="btn btn-primary" style="width:100%;padding:0.75rem;">
+          <span class="spinner" data-el="gen-spinner" hidden></span>
+          <span class="material-symbols-outlined" style="font-size:1.05rem;" data-el="gen-icon">auto_awesome</span>
+          <span data-el="gen-label"></span>
+        </button>
+      </div>
+
+      <div class="col-span-8">
+        <div class="card" style="padding:3rem 1.5rem;text-align:center;min-height:26rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;" data-el="empty-state" hidden>
+          <div style="width:4rem;height:4rem;border-radius:1rem;background:var(--primary-fixed);color:var(--primary);display:flex;align-items:center;justify-content:center;">
+            <span class="material-symbols-outlined" style="font-size:2rem;">assignment_add</span>
+          </div>
+          <h3 style="margin:0;font-size:1.05rem;">Ready to Generate Examination</h3>
+          <p class="text-xs muted" style="max-width:26rem;margin:0;line-height:1.5;">
+            Configure duration, marks, and book-back ratio on the left. Click "Generate Test Paper" to create an authentic TN State Board question paper.
+          </p>
+          <button type="button" id="btn-quick-demo-paper" class="btn btn-primary" style="margin-top:0.4rem;"></button>
+        </div>
+
+        <div class="card" style="padding:3.5rem 1.5rem;text-align:center;min-height:26rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;" data-el="loading-state" hidden>
+          <span class="spinner spinner-lg"></span>
+          <div style="font-size:0.95rem;font-weight:700;" data-el="loading-title"></div>
+          <div class="text-xs muted">Excluding untaught topics • Balancing difficulty distribution • Generating Tamil &amp; English keys</div>
+        </div>
+
+        <div class="card" style="padding:0;overflow:hidden;" data-el="paper-card" hidden>
+          <div class="flex-between no-print" style="padding:0.75rem 1rem;border-bottom:1px solid var(--surface-container);background:rgba(242,243,255,0.5);">
+            <div class="segmented-pill">
+              <button type="button" id="tab-paper-view" class="segmented-btn">Question Paper View</button>
+              <button type="button" id="tab-rubric-view" class="segmented-btn">Official Marking Scheme &amp; Answer Keys</button>
+            </div>
+            <span class="font-mono text-xs muted" data-el="paper-id"></span>
+          </div>
+
+          <div style="padding:1.75rem;display:flex;flex-direction:column;gap:1.35rem;" data-el="paper-pane" hidden>
+            <div style="text-align:center;padding-bottom:1rem;border-bottom:2px solid var(--on-surface);">
+              <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--outline);">
+                GOVERNMENT OF TAMIL NADU • DEPARTMENT OF SCHOOL EDUCATION
+              </div>
+              <h2 style="margin:0.3rem 0;font-size:1.15rem;font-weight:800;" data-el="paper-title"></h2>
+              <div class="text-xs muted" style="font-weight:600;" data-el="paper-meta"></div>
+            </div>
+            <div class="flex-col" style="gap:1.35rem;" data-el="paper-sections"></div>
+          </div>
+
+          <div style="padding:1.5rem;display:flex;flex-direction:column;gap:0.9rem;" data-el="rubric-pane" hidden>
+            <div class="badge badge-secondary" style="padding:0.65rem 0.85rem;border-radius:0.75rem;">
+              <span class="material-symbols-outlined fill" style="font-size:1rem;">verified</span>
+              <span>Official Stepwise Scoring Rubrics for Evaluators according to DGE TN Guidelines.</span>
+            </div>
+            <div class="flex-col" style="gap:0.9rem;" data-el="rubric-sections"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-pg-section">
+  <div class="flex-col" style="gap:0.8rem;">
+    <div class="soft-panel flex-between" style="padding:0.45rem 0.8rem;">
+      <strong class="text-xs" style="text-transform:uppercase;" data-el="sec-name"></strong>
+      <span class="text-xs muted" style="font-style:italic;" data-el="sec-instructions"></span>
+    </div>
+    <div class="flex-col" style="gap:0.8rem;" data-el="sec-questions"></div>
+  </div>
+</template>
+
+<template id="tpl-pg-question">
+  <div style="padding-left:0.4rem;">
+    <div class="flex-between" style="align-items:flex-start;flex-wrap:nowrap;">
+      <div class="flex-row" style="align-items:flex-start;flex-wrap:nowrap;flex:1;">
+        <strong class="text-xs" data-el="q-no"></strong>
+        <div class="flex-col" style="gap:0.25rem;flex:1;">
+          <div class="text-xs" style="white-space:pre-line;" data-el="q-en" hidden></div>
+          <div class="text-xs font-tamil muted" style="white-space:pre-line;" data-el="q-ta" hidden></div>
+          <div class="grid grid-4" style="gap:0.4rem;margin-top:0.25rem;" data-el="q-options" hidden></div>
+        </div>
+      </div>
+      <strong class="text-xs" data-el="q-marks"></strong>
+    </div>
+    <div class="flex-row no-print" style="padding-left:1.1rem;margin-top:0.25rem;font-size:0.7rem;">
+      <button type="button" class="btn-ghost" style="border:none;padding:0.15rem 0.3rem;" data-el="btn-swap">
+        <span class="material-symbols-outlined" style="font-size:0.85rem;">sync</span> Swap variant
+      </button>
+      <button type="button" class="btn-ghost" style="border:none;padding:0.15rem 0.3rem;" data-el="btn-lock">
+        <span class="material-symbols-outlined" style="font-size:0.85rem;" data-el="lock-icon"></span>
+        <span data-el="lock-text"></span>
+      </button>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-pg-mcq-opt">
+  <div class="soft-panel font-mono" style="padding:0.3rem 0.5rem;font-size:0.7rem;" data-el="opt-text"></div>
+</template>
+
+<template id="tpl-pg-rubric-section">
+  <div class="card" style="box-shadow:none;">
+    <div class="text-xs" style="font-weight:700;color:var(--primary);margin-bottom:0.5rem;text-transform:uppercase;" data-el="sec-name"></div>
+    <div class="flex-col" style="gap:0.4rem;" data-el="rubric-rows"></div>
+  </div>
+</template>
+
+<template id="tpl-pg-rubric-row">
+  <div class="flex-between text-xs" style="padding:0.35rem 0;border-bottom:1px solid var(--surface-container-low);gap:0.75rem;">
+    <span style="flex:1;"><strong data-el="q-no"></strong> <span data-el="q-detail"></span></span>
+    <strong class="font-mono" style="color:var(--secondary);" data-el="q-marks"></strong>
+  </div>
+</template>

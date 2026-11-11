@@ -1,0 +1,115 @@
+<template id="tpl-api-explorer">
+  <div class="page-container">
+    <header class="flex-between">
+      <div>
+        <div class="flex-row">
+          <h1 class="page-title" data-el="page-title"></h1>
+          <span class="badge badge-secondary">Ready for Backend Developer</span>
+        </div>
+        <p class="page-subtitle">Complete REST endpoints catalog, JSON payload schemas, curl/fetch/Python snippets, and live testing sandbox to link this frontend to your backend.</p>
+      </div>
+
+      <button type="button" id="btn-download-openapi" class="btn btn-surface">
+        <span class="material-symbols-outlined" style="font-size:1rem;">download</span>
+        <span data-el="download-label"></span>
+      </button>
+    </header>
+
+    <section class="card hero-gradient">
+      <div class="flex-between" style="gap:1rem;">
+        <div>
+          <div class="flex-row">
+            <strong style="font-size:0.9rem;" data-el="base-url-label"></strong>
+            <code class="font-mono" style="background:rgba(0,0,0,0.3);color:var(--secondary-fixed);padding:0.2rem 0.6rem;border-radius:0.4rem;font-size:0.78rem;" data-el="base-url-val"></code>
+          </div>
+          <p class="text-xs" style="margin:0.35rem 0 0;color:var(--on-primary-container);">
+            Configure <code class="font-mono">API_BASE_URL</code> in <code class="font-mono">.env</code> (read by Python <code class="font-mono">app.py</code>). Frontend automatically falls back to in-browser mock data when backend is offline.
+          </p>
+        </div>
+
+        <div class="segmented-pill" style="background:rgba(0,0,0,0.22);">
+          <span class="text-xs" style="padding:0 0.45rem;font-weight:700;color:#fff;">Mode:</span>
+          <button type="button" id="api-exp-mock" class="segmented-btn">Mock Data</button>
+          <button type="button" id="api-exp-live" class="segmented-btn">Live API</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="card flex-between" style="padding:0.85rem 1rem;">
+      <div class="flex-row" style="gap:0.6rem;">
+        <label for="api-category-select" class="text-xs muted" style="font-weight:700;" data-el="cat-label"></label>
+        <select id="api-category-select" class="select" style="width:auto;min-width:18rem;"></select>
+      </div>
+      <span class="badge badge-neutral font-mono" data-el="ep-count"></span>
+    </div>
+
+    <div class="grid grid-12" style="gap:1.25rem;align-items:start;">
+      <div class="col-span-5 flex-col" style="gap:0.55rem;max-height:46rem;overflow-y:auto;" data-el="ep-list"></div>
+
+      <div class="card card-lg col-span-7 flex-col" style="gap:1.1rem;">
+        <div style="padding-bottom:0.85rem;border-bottom:1px solid var(--surface-container);">
+          <div class="flex-row" style="margin-bottom:0.35rem;">
+            <span class="badge font-mono" data-el="sel-method"></span>
+            <code class="font-mono" style="font-size:0.88rem;font-weight:800;" data-el="sel-path"></code>
+          </div>
+          <h2 style="margin:0;font-size:1rem;font-weight:700;" data-el="sel-summary"></h2>
+          <p class="text-xs muted" style="margin:0.3rem 0 0;line-height:1.5;" data-el="sel-desc"></p>
+        </div>
+
+        <div data-el="req-body-wrap" hidden>
+          <div class="flex-between text-xs" style="margin-bottom:0.4rem;">
+            <strong data-el="req-body-label"></strong>
+            <span class="font-mono muted">application/json</span>
+          </div>
+          <pre class="code-block" data-el="req-body-pre"></pre>
+        </div>
+
+        <div>
+          <div class="flex-between" style="padding-bottom:0.35rem;margin-bottom:0.45rem;border-bottom:1px solid var(--surface-container);">
+            <strong class="text-xs" style="text-transform:uppercase;">Implementation Snippets</strong>
+            <div class="segmented-pill">
+              <button type="button" class="segmented-btn" data-snip-tab="curl">cURL</button>
+              <button type="button" class="segmented-btn" data-snip-tab="fetch">Fetch (JS)</button>
+              <button type="button" class="segmented-btn" data-snip-tab="python">Python Requests</button>
+            </div>
+          </div>
+          <div style="position:relative;">
+            <pre class="code-block amber" data-el="snippet-pre"></pre>
+            <button type="button" id="btn-copy-snippet" class="btn" style="position:absolute;top:0.5rem;right:0.5rem;padding:0.25rem 0.55rem;background:#1e293b;color:#e2e8f0;font-size:0.68rem;">
+              <span class="material-symbols-outlined" style="font-size:0.85rem;">content_copy</span>
+              <span data-el="copy-label"></span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <button type="button" id="btn-test-endpoint" class="btn btn-secondary" style="width:100%;padding:0.7rem;">
+            <span class="spinner" data-el="test-spinner" hidden></span>
+            <span class="material-symbols-outlined" style="font-size:1.05rem;" data-el="test-icon">play_arrow</span>
+            <span data-el="test-label"></span>
+          </button>
+
+          <div class="soft-panel flex-col" style="margin-top:0.85rem;gap:0.5rem;" data-el="test-result-wrap" hidden>
+            <div class="flex-between text-xs">
+              <strong>Execution Result:</strong>
+              <strong class="font-mono" style="color:var(--secondary);" data-el="test-status"></strong>
+            </div>
+            <div class="text-xs" style="color:var(--error);font-weight:600;" data-el="test-hint" hidden></div>
+            <pre class="code-block emerald" data-el="test-json"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-api-ep-item">
+  <div class="card" style="padding:0.85rem;cursor:pointer;">
+    <div class="flex-row" style="flex-wrap:nowrap;">
+      <span class="badge font-mono" style="font-size:0.65rem;" data-el="ep-method"></span>
+      <span class="font-mono text-xs" style="font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" data-el="ep-path"></span>
+    </div>
+    <div class="text-xs" style="font-weight:600;margin-top:0.35rem;" data-el="ep-summary"></div>
+    <div class="font-mono" style="font-size:0.68rem;color:var(--outline);margin-top:0.15rem;" data-el="ep-category"></div>
+  </div>
+</template>

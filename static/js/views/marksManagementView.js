@@ -1,4 +1,5 @@
-import { appState, escapeHtml, showToast, t, triggerRender } from '../state.js';
+import { appState, showToast, t, triggerRender } from '../state.js';
+import { cloneTemplate, qs, setText, setVisible } from '../utils/dom.js';
 
 let marksState = {
   assessment: 'UT2',
@@ -16,147 +17,58 @@ function computeLedgerStats(students) {
 }
 
 export function renderMarksManagementView() {
+  const root = cloneTemplate('tpl-marks-management');
   const students = appState.marksLedger;
   const stats = computeLedgerStats(students);
 
-  return `
-    <div class="page-container">
-      <header class="flex-between">
-        <div>
-          <div class="flex-row">
-            <h1 class="page-title">${t('Marks Management & Intelligence', 'மதிப்பெண் மேலாண்மை & நுண்ணறிவு')}</h1>
-            <span class="badge badge-primary">Assessment Analytics</span>
-          </div>
-          <p class="page-subtitle">Question-wise scoring, CSV/Excel import, automated total verification, and AI-suggested vs teacher-approved audit trail.</p>
-        </div>
+  setText(root, '[data-el="page-title"]', t('Marks Management & Intelligence', 'மதிப்பெண் மேலாண்மை & நுண்ணறிவு'));
+  setText(root, '[data-el="import-label"]', t('Import CSV / Excel', 'CSV / Excel இறக்குமதி'));
+  setText(root, '[data-el="export-label"]', t('Export DGE Format', 'DGE வடிவில் ஏற்றுமதி'));
 
-        <div class="flex-row">
-          <button type="button" id="btn-open-marks-import" class="btn btn-surface">
-            <span class="material-symbols-outlined" style="font-size:1rem;">upload_file</span>
-            <span>${t('Import CSV / Excel', 'CSV / Excel இறக்குமதி')}</span>
-          </button>
-          <button type="button" id="btn-export-dge" class="btn btn-primary">
-            <span class="material-symbols-outlined" style="font-size:1rem;">file_download</span>
-            <span>${t('Export DGE Format', 'DGE வடிவில் ஏற்றுமதி')}</span>
-          </button>
-        </div>
-      </header>
+  setText(root, '[data-el="assess-label"]', t('Target Assessment:', 'தேர்வு:'));
+  qs(root, '#marks-assess-select').value = marksState.assessment;
 
-      <div class="card flex-between">
-        <div class="flex-row">
-          <label class="text-xs" style="font-weight:700;">${t('Target Assessment:', 'தேர்வு:')}</label>
-          <select id="marks-assess-select" class="select" style="width:auto;min-width:18rem;">
-            <option value="UT1" ${marksState.assessment === 'UT1' ? 'selected' : ''}>Unit Test 1 — Matrices &amp; Determinants</option>
-            <option value="UT2" ${marksState.assessment === 'UT2' ? 'selected' : ''}>Unit Test 2 — Complex Numbers &amp; Equations</option>
-            <option value="MID" ${marksState.assessment === 'MID' ? 'selected' : ''}>Mid-Term Examination (50M)</option>
-            <option value="REV" ${marksState.assessment === 'REV' ? 'selected' : ''}>Revision Test 1 (Full Vol 1)</option>
-          </select>
-        </div>
-        <div class="flex-row text-xs muted" style="gap:1rem;">
-          <span>${t('Cohort Size:', 'மொத்த மாணவர்கள்:')} <strong style="color:var(--on-surface);">${appState.currentClass.studentsCount}</strong></span>
-          <span>${t('Ledger Average:', 'வகுப்பு சராசரி:')} <strong id="marks-avg-val" style="color:var(--secondary);">${stats.avgPct}%</strong></span>
-          <span>${t('Discrepancy Flags:', 'முரண்பாடு குறியீடுகள்:')} <strong style="color:var(--error);">${stats.flagsCount}</strong></span>
-        </div>
-      </div>
+  setText(root, '[data-el="cohort-label"]', t('Cohort Size:', 'மொத்த மாணவர்கள்:'));
+  setText(root, '[data-el="cohort-val"]', String(appState.currentClass.studentsCount));
+  setText(root, '[data-el="avg-label"]', t('Ledger Average:', 'வகுப்பு சராசரி:'));
+  setText(root, '#marks-avg-val', `${stats.avgPct}%`);
+  setText(root, '[data-el="flags-label"]', t('Discrepancy Flags:', 'முரண்பாடு குறியீடுகள்:'));
+  setText(root, '[data-el="flags-val"]', String(stats.flagsCount));
 
-      <section class="card" style="padding:0;overflow:hidden;">
-        <div class="flex-between" style="padding:0.75rem 1rem;background:rgba(242,243,255,0.6);border-bottom:1px solid var(--surface-container);">
-          <strong class="text-xs">${t('Question-Wise Marks Ledger', 'கேள்விவாரியான மதிப்பெண் பதிவேடு')}</strong>
-          <span class="text-xs muted">${t('Click any cell to edit score', 'மதிப்பெண்ணைத் திருத்த கலத்தைத் தேர்ந்தெடுக்கவும்')}</span>
-        </div>
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Roll No</th>
-                <th>Student Name</th>
-                <th style="text-align:center;">Q.1 (1M)</th>
-                <th style="text-align:center;">Q.2 (2M)</th>
-                <th style="text-align:center;">Q.3 (3M)</th>
-                <th style="text-align:center;">Q.4 (5M)</th>
-                <th style="text-align:center;">Q.5 (5M)</th>
-                <th style="text-align:center;">Total (16M)</th>
-                <th>Audit Status / Flags</th>
-                <th style="text-align:right;">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${students
-                .map(
-                  (s) => `
-                <tr>
-                  <td class="font-mono" style="font-weight:700;color:var(--primary);">${escapeHtml(s.rollNo)}</td>
-                  <td><strong>${escapeHtml(s.name)}</strong></td>
-                  ${['q1', 'q2', 'q3', 'q4', 'q5']
-                    .map(
-                      (field) => `
-                    <td style="text-align:center;">
-                      <input
-                        type="number"
-                        min="0"
-                        max="${FIELD_MAX[field]}"
-                        class="input"
-                        style="width:3rem;padding:0.3rem;text-align:center;"
-                        data-mark-roll="${escapeHtml(s.rollNo)}"
-                        data-mark-field="${field}"
-                        value="${s[field]}"
-                      />
-                    </td>
-                  `
-                    )
-                    .join('')}
-                  <td style="text-align:center;">
-                    <strong id="total-${escapeHtml(s.rollNo)}" style="font-size:0.95rem;color:var(--primary);">${s.total}</strong>
-                    <span class="text-xs muted">/ 16</span>
-                  </td>
-                  <td>
-                    ${
-                      s.flag
-                        ? `<span class="badge badge-error"><span class="material-symbols-outlined" style="font-size:0.8rem;">flag</span>${escapeHtml(s.flag)}</span>`
-                        : `<span style="color:var(--secondary);font-weight:700;display:inline-flex;align-items:center;gap:0.25rem;"><span class="material-symbols-outlined" style="font-size:0.9rem;">check_circle</span>Verified</span>`
-                    }
-                  </td>
-                  <td style="text-align:right;">
-                    <button type="button" class="btn btn-ghost" style="color:var(--primary);padding:0.25rem 0.5rem;" data-audit-slip="${escapeHtml(s.name)}">Audit Slip →</button>
-                  </td>
-                </tr>
-              `
-                )
-                .join('')}
-            </tbody>
-          </table>
-        </div>
-      </section>
+  setText(root, '[data-el="ledger-title"]', t('Question-Wise Marks Ledger', 'கேள்விவாரியான மதிப்பெண் பதிவேடு'));
+  setText(root, '[data-el="ledger-hint"]', t('Click any cell to edit score', 'மதிப்பெண்ணைத் திருத்த கலத்தைத் தேர்ந்தெடுக்கவும்'));
 
-      ${
-        marksState.importModalOpen
-          ? `
-        <div id="marks-import-backdrop" class="modal-backdrop">
-          <div class="modal-card" style="max-width:28rem;">
-            <div class="flex-between" style="padding-bottom:0.65rem;border-bottom:1px solid var(--surface-container);">
-              <h2 style="margin:0;font-size:1rem;font-weight:700;">Batch Import Marks Spreadsheet</h2>
-              <button type="button" id="btn-close-marks-import" class="btn-ghost" style="padding:0.25rem;"><span class="material-symbols-outlined">close</span></button>
-            </div>
-            <div class="soft-panel" style="border:2px dashed var(--outline-variant);text-align:center;padding:1.4rem;margin-top:0.9rem;">
-              <span class="material-symbols-outlined" style="color:var(--primary);font-size:2rem;">table_view</span>
-              <div class="text-xs" style="font-weight:700;margin-top:0.25rem;">Upload CSV or XLSX file</div>
-              <div class="text-xs muted">Columns: RollNo, Q1, Q2, Q3, Q4, Q5</div>
-            </div>
-            <div class="badge badge-secondary" style="margin-top:0.85rem;padding:0.6rem 0.75rem;border-radius:0.75rem;white-space:normal;">
-              <span class="material-symbols-outlined fill" style="font-size:1rem;">verified</span>
-              <span>Automatic total recalculation and discrepancy matching against EMIS roster.</span>
-            </div>
-            <div class="flex-row" style="justify-content:flex-end;margin-top:1rem;">
-              <button type="button" id="btn-cancel-marks-import" class="btn btn-surface">Cancel</button>
-              <button type="button" id="btn-exec-marks-import" class="btn btn-primary">Execute Import</button>
-            </div>
-          </div>
-        </div>
-      `
-          : ''
+  const tbody = qs(root, '[data-el="ledger-tbody"]');
+  students.forEach((s) => {
+    const row = cloneTemplate('tpl-marks-row');
+    setText(row, '[data-el="roll"]', s.rollNo);
+    setText(row, '[data-el="name"]', s.name);
+
+    ['q1', 'q2', 'q3', 'q4', 'q5'].forEach((field) => {
+      const inp = qs(row, `[data-field="${field}"]`);
+      if (inp) {
+        inp.setAttribute('data-mark-roll', s.rollNo);
+        inp.setAttribute('data-mark-field', field);
+        inp.value = String(s[field]);
       }
-    </div>
-  `;
+    });
+
+    const totalEl = qs(row, '[data-el="total"]');
+    if (totalEl) {
+      totalEl.id = `total-${s.rollNo}`;
+      totalEl.textContent = String(s.total);
+    }
+
+    setVisible(row, '[data-el="flag-badge"]', Boolean(s.flag));
+    setText(row, '[data-el="flag-text"]', s.flag || '');
+    setVisible(row, '[data-el="verified-badge"]', !s.flag);
+
+    qs(row, '[data-el="audit-btn"]')?.setAttribute('data-audit-slip', s.name);
+    tbody.appendChild(row);
+  });
+
+  setVisible(root, '#marks-import-backdrop', marksState.importModalOpen);
+  return root;
 }
 
 export function bindMarksManagementEvents() {

@@ -1,0 +1,149 @@
+<template id="tpl-login">
+  <main class="login-page">
+    <div class="login-shell">
+      <div class="login-left">
+        <div style="display:flex;flex-direction:column;gap:1.1rem;position:relative;z-index:2;">
+          <div class="flex-row" style="gap:0.75rem;">
+            <div class="brand-logo-box" style="width:3rem;height:3rem;background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);font-size:1.1rem;">IQ</div>
+            <div>
+              <div style="font-size:1.45rem;font-weight:800;letter-spacing:-0.02em;">JM Vertex ExamIQ</div>
+              <div class="font-mono" style="font-size:0.72rem;text-transform:uppercase;color:var(--secondary-fixed);" data-el="login-suite"></div>
+            </div>
+          </div>
+
+          <div>
+            <span class="badge" style="background:rgba(255,255,255,0.16);color:#fff;padding:0.35rem 0.8rem;">
+              <span class="material-symbols-outlined fill" style="font-size:0.95rem;color:var(--secondary-fixed);">verified</span>
+              <span data-el="login-badge"></span>
+            </span>
+          </div>
+
+          <div style="padding-top:0.5rem;">
+            <h1 style="margin:0;font-size:2.1rem;font-weight:800;line-height:1.18;letter-spacing:-0.025em;">
+              <span data-el="login-hero-line1"></span><br />
+              <span data-el="login-hero-line2"></span>
+            </h1>
+            <p style="margin:0.6rem 0 0;font-size:0.95rem;color:var(--primary-fixed);opacity:0.95;" data-el="login-hero-sub"></p>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="gap:0.75rem;position:relative;z-index:2;">
+          <div class="login-feature-card">
+            <span class="material-symbols-outlined" style="color:var(--secondary-fixed);font-size:1.2rem;">lock_clock</span>
+            <div>
+              <div style="font-size:0.78rem;font-weight:700;" data-el="feat-1-title"></div>
+              <div style="font-size:0.7rem;color:var(--primary-fixed);" data-el="feat-1-sub"></div>
+            </div>
+          </div>
+          <div class="login-feature-card">
+            <span class="material-symbols-outlined" style="color:var(--secondary-fixed);font-size:1.2rem;">thumb_up_alt</span>
+            <div>
+              <div style="font-size:0.78rem;font-weight:700;" data-el="feat-2-title"></div>
+              <div style="font-size:0.7rem;color:var(--primary-fixed);" data-el="feat-2-sub"></div>
+            </div>
+          </div>
+          <div class="login-feature-card">
+            <span class="material-symbols-outlined" style="color:var(--secondary-fixed);font-size:1.2rem;">translate</span>
+            <div>
+              <div style="font-size:0.78rem;font-weight:700;" data-el="feat-3-title"></div>
+              <div style="font-size:0.7rem;color:var(--primary-fixed);" data-el="feat-3-sub"></div>
+            </div>
+          </div>
+          <div class="login-feature-card">
+            <span class="material-symbols-outlined" style="color:var(--secondary-fixed);font-size:1.2rem;">insights</span>
+            <div>
+              <div style="font-size:0.78rem;font-weight:700;" data-el="feat-4-title"></div>
+              <div style="font-size:0.7rem;color:var(--primary-fixed);" data-el="feat-4-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-between" style="padding-top:0.75rem;border-top:1px solid rgba(255,255,255,0.16);font-size:0.74rem;color:var(--primary-fixed);">
+          <div class="flex-row" style="gap:0.4rem;">
+            <span class="material-symbols-outlined" style="font-size:0.95rem;">assured_workload</span>
+            <span data-el="login-auth-schools"></span>
+          </div>
+          <span class="font-mono">AY 2024–2025</span>
+        </div>
+      </div>
+
+      <div class="login-right">
+        <div class="flex-between">
+          <div class="flex-row" style="gap:0.45rem;">
+            <span style="width:0.6rem;height:0.6rem;border-radius:50%;background:var(--secondary);"></span>
+            <span style="font-size:0.72rem;font-weight:700;color:var(--secondary);text-transform:uppercase;letter-spacing:0.05em;" data-el="login-gateway"></span>
+          </div>
+
+          <div class="segmented-pill">
+            <button type="button" id="login-lang-en" class="segmented-btn">English</button>
+            <button type="button" id="login-lang-ta" class="segmented-btn">தமிழ்</button>
+          </div>
+        </div>
+
+        <div style="max-width:26rem;width:100%;margin:auto;padding:1.25rem 0;display:flex;flex-direction:column;gap:1rem;">
+          <div>
+            <h2 style="margin:0;font-size:1.5rem;font-weight:800;letter-spacing:-0.02em;" data-el="login-heading"></h2>
+            <p class="text-sm muted" style="margin:0.35rem 0 0;" data-el="login-subheading"></p>
+          </div>
+
+          <div class="soft-panel flex-row" style="padding:0.55rem 0.75rem;font-size:0.76rem;color:var(--on-surface-variant);">
+            <span class="material-symbols-outlined" style="color:var(--secondary);font-size:1rem;">admin_panel_settings</span>
+            <span>Administrator access • Portal Demo: <strong class="font-mono">admin@gmail.com / admin@123</strong></span>
+          </div>
+
+          <form id="login-form" style="display:flex;flex-direction:column;gap:0.95rem;">
+            <div>
+              <label class="field-label" for="login-email">Administrator email</label>
+              <div class="input-icon-wrap">
+                <span class="material-symbols-outlined leading-icon">badge</span>
+                <input id="login-email" type="email" required class="input" />
+              </div>
+            </div>
+
+            <div>
+              <div class="flex-between" style="margin-bottom:0.3rem;">
+                <label class="field-label" for="login-password" style="margin:0;">Password</label>
+                <span style="font-size:0.72rem;color:var(--primary);font-weight:600;" data-el="login-forgot"></span>
+              </div>
+              <div class="input-icon-wrap">
+                <span class="material-symbols-outlined leading-icon">lock</span>
+                <input id="login-password" required class="input" style="padding-right:2.4rem;" />
+                <button type="button" id="btn-toggle-pw" class="trailing-btn" aria-label="Toggle password visibility">
+                  <span class="material-symbols-outlined" style="font-size:1.1rem;" data-el="pw-eye-icon"></span>
+                </button>
+              </div>
+            </div>
+
+            <div class="flex-between" style="font-size:0.74rem;">
+              <label class="flex-row" style="gap:0.4rem;cursor:pointer;">
+                <input id="login-remember" type="checkbox" />
+                <span class="muted" data-el="login-remember-label"></span>
+              </label>
+              <span class="muted flex-row" style="gap:0.25rem;">
+                <span class="material-symbols-outlined" style="font-size:0.9rem;">support_agent</span>
+                <span data-el="login-helpdesk"></span>
+              </span>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width:100%;padding:0.8rem 1rem;font-size:0.85rem;" data-el="login-submit-btn">
+              <span class="spinner" data-el="login-spinner" hidden></span>
+              <span data-el="login-submit-label"></span>
+              <span class="material-symbols-outlined" style="font-size:1.15rem;">arrow_forward</span>
+            </button>
+          </form>
+        </div>
+
+        <div class="flex-between" style="padding-top:0.8rem;border-top:1px solid var(--surface-container-low);font-size:0.72rem;color:var(--outline);">
+          <div class="flex-row" style="gap:0.35rem;">
+            <span class="material-symbols-outlined" style="color:var(--secondary);font-size:0.95rem;">encrypted</span>
+            <span>SSL 256-bit AES • State Data Center (ELCOT)</span>
+          </div>
+          <div class="flex-row" style="gap:0.35rem;">
+            <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:var(--secondary);"></span>
+            <span>Gateway Active</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</template>

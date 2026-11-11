@@ -1,6 +1,7 @@
 import { apiClient } from '../api/client.js';
 import { API_BASE_URL, API_ENDPOINTS } from '../api/endpoints.js';
-import { appState, escapeHtml, getSelectedEndpoint, showToast, switchApiMode, t, triggerRender } from '../state.js';
+import { appState, getSelectedEndpoint, showToast, switchApiMode, t, triggerRender } from '../state.js';
+import { cloneTemplate, fillSelect, qs, setText, setVisible } from '../utils/dom.js';
 
 function getCurlSnippet(ep) {
   const url = `${API_BASE_URL}${ep.path}`;
@@ -30,7 +31,12 @@ function activeSnippetText(ep) {
   return getCurlSnippet(ep);
 }
 
+function methodBadgeClass(m) {
+  return m === 'GET' ? 'badge-secondary' : m === 'POST' ? 'badge-primary' : m === 'PUT' ? 'badge-tertiary' : 'badge-error';
+}
+
 export function renderApiExplorerView() {
+  const root = cloneTemplate('tpl-api-explorer');
   const categories = ['All', ...new Set(API_ENDPOINTS.map((e) => e.category))];
   const filtered =
     appState.apiCategory === 'All'
@@ -38,153 +44,92 @@ export function renderApiExplorerView() {
       : API_ENDPOINTS.filter((e) => e.category === appState.apiCategory);
   const selected = getSelectedEndpoint();
 
-  const methodBadge = (m) =>
-    m === 'GET' ? 'badge-secondary' : m === 'POST' ? 'badge-primary' : m === 'PUT' ? 'badge-tertiary' : 'badge-error';
+  setText(root, '[data-el="page-title"]', t('Backend API Explorer & Integration Contracts', 'பின்தள API விவரக்குறிப்பு & சோதனை மையம்'));
+  setText(root, '[data-el="download-label"]', t('Download OpenAPI (JSON)', 'OpenAPI (JSON) பதிவிறக்கு'));
+  setText(root, '[data-el="base-url-label"]', t('Target Backend Base URL:', 'பின்தள முகவரி:'));
+  setText(root, '[data-el="base-url-val"]', API_BASE_URL);
 
-  return `
-    <div class="page-container">
-      <header class="flex-between">
-        <div>
-          <div class="flex-row">
-            <h1 class="page-title">${t('Backend API Explorer & Integration Contracts', 'பின்தள API விவரக்குறிப்பு & சோதனை மையம்')}</h1>
-            <span class="badge badge-secondary">Ready for Backend Developer</span>
-          </div>
-          <p class="page-subtitle">Complete REST endpoints catalog, JSON payload schemas, curl/fetch/Python snippets, and live testing sandbox to link this frontend to your backend.</p>
-        </div>
+  const mockBtn = qs(root, '#api-exp-mock');
+  const liveBtn = qs(root, '#api-exp-live');
+  if (mockBtn) {
+    mockBtn.classList.toggle('active-white', appState.apiMode === 'mock');
+    mockBtn.style.color = appState.apiMode !== 'mock' ? '#fff' : '';
+  }
+  if (liveBtn) {
+    liveBtn.classList.toggle('active-secondary', appState.apiMode === 'live');
+    liveBtn.style.color = appState.apiMode !== 'live' ? '#fff' : '';
+  }
 
-        <button type="button" id="btn-download-openapi" class="btn btn-surface">
-          <span class="material-symbols-outlined" style="font-size:1rem;">download</span>
-          <span>${t('Download OpenAPI (JSON)', 'OpenAPI (JSON) பதிவிறக்கு')}</span>
-        </button>
-      </header>
+  setText(root, '[data-el="cat-label"]', t('Endpoint Category:', 'API பிரிவு:'));
+  fillSelect(
+    qs(root, '#api-category-select'),
+    categories.map((cat) => ({ value: cat, label: cat })),
+    appState.apiCategory
+  );
+  setText(root, '[data-el="ep-count"]', `${filtered.length} Endpoints`);
 
-      <section class="card hero-gradient">
-        <div class="flex-between" style="gap:1rem;">
-          <div>
-            <div class="flex-row">
-              <strong style="font-size:0.9rem;">${t('Target Backend Base URL:', 'பின்தள முகவரி:')}</strong>
-              <code class="font-mono" style="background:rgba(0,0,0,0.3);color:var(--secondary-fixed);padding:0.2rem 0.6rem;border-radius:0.4rem;font-size:0.78rem;">
-                ${escapeHtml(API_BASE_URL)}
-              </code>
-            </div>
-            <p class="text-xs" style="margin:0.35rem 0 0;color:var(--on-primary-container);">
-              Configure <code class="font-mono">API_BASE_URL</code> in <code class="font-mono">.env</code> (read by Python <code class="font-mono">app.py</code>). Frontend automatically falls back to in-browser mock data when backend is offline.
-            </p>
-          </div>
+  const epList = qs(root, '[data-el="ep-list"]');
+  filtered.forEach((ep) => {
+    const globalIdx = API_ENDPOINTS.indexOf(ep);
+    const isSelected = globalIdx === appState.selectedEndpointIdx;
+    const item = cloneTemplate('tpl-api-ep-item');
+    item.setAttribute('data-select-ep', String(globalIdx));
+    item.style.borderColor = isSelected ? 'var(--primary)' : 'var(--surface-container)';
+    item.style.boxShadow = isSelected ? '0 0 0 1px var(--primary)' : 'var(--shadow-1)';
 
-          <div class="segmented-pill" style="background:rgba(0,0,0,0.22);">
-            <span class="text-xs" style="padding:0 0.45rem;font-weight:700;color:#fff;">Mode:</span>
-            <button type="button" id="api-exp-mock" class="segmented-btn ${appState.apiMode === 'mock' ? 'active-white' : ''}" style="${appState.apiMode !== 'mock' ? 'color:#fff;' : ''}">Mock Data</button>
-            <button type="button" id="api-exp-live" class="segmented-btn ${appState.apiMode === 'live' ? 'active-secondary' : ''}" style="${appState.apiMode !== 'live' ? 'color:#fff;' : ''}">Live API</button>
-          </div>
-        </div>
-      </section>
+    const mEl = qs(item, '[data-el="ep-method"]');
+    if (mEl) {
+      mEl.className = `badge font-mono ${methodBadgeClass(ep.method)}`;
+      mEl.textContent = ep.method;
+    }
+    setText(item, '[data-el="ep-path"]', ep.path);
+    setText(item, '[data-el="ep-summary"]', ep.summary);
+    setText(item, '[data-el="ep-category"]', ep.category);
+    epList.appendChild(item);
+  });
 
-      <div class="card flex-between" style="padding:0.85rem 1rem;">
-        <div class="flex-row" style="gap:0.6rem;">
-          <label for="api-category-select" class="text-xs muted" style="font-weight:700;">${t('Endpoint Category:', 'API பிரிவு:')}</label>
-          <select id="api-category-select" class="select" style="width:auto;min-width:18rem;">
-            ${categories
-              .map(
-                (cat) => `<option value="${escapeHtml(cat)}" ${appState.apiCategory === cat ? 'selected' : ''}>${escapeHtml(cat)}</option>`
-              )
-              .join('')}
-          </select>
-        </div>
-        <span class="badge badge-neutral font-mono">${filtered.length} Endpoints</span>
-      </div>
+  const selMethod = qs(root, '[data-el="sel-method"]');
+  if (selMethod) {
+    selMethod.className = `badge font-mono ${methodBadgeClass(selected.method)}`;
+    selMethod.textContent = selected.method;
+  }
+  setText(root, '[data-el="sel-path"]', selected.path);
+  setText(root, '[data-el="sel-summary"]', selected.summary);
+  setText(root, '[data-el="sel-desc"]', selected.description);
 
-      <div class="grid grid-12" style="gap:1.25rem;align-items:start;">
-        <div class="col-span-5 flex-col" style="gap:0.55rem;max-height:46rem;overflow-y:auto;">
-          ${filtered
-            .map((ep) => {
-              const globalIdx = API_ENDPOINTS.indexOf(ep);
-              const isSelected = globalIdx === appState.selectedEndpointIdx;
-              return `
-              <div
-                data-select-ep="${globalIdx}"
-                class="card"
-                style="padding:0.85rem;cursor:pointer;border-color:${isSelected ? 'var(--primary)' : 'var(--surface-container)'};box-shadow:${isSelected ? '0 0 0 1px var(--primary)' : 'var(--shadow-1)'};"
-              >
-                <div class="flex-row" style="flex-wrap:nowrap;">
-                  <span class="badge font-mono ${methodBadge(ep.method)}" style="font-size:0.65rem;">${escapeHtml(ep.method)}</span>
-                  <span class="font-mono text-xs" style="font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(ep.path)}</span>
-                </div>
-                <div class="text-xs" style="font-weight:600;margin-top:0.35rem;">${escapeHtml(ep.summary)}</div>
-                <div class="font-mono" style="font-size:0.68rem;color:var(--outline);margin-top:0.15rem;">${escapeHtml(ep.category)}</div>
-              </div>
-            `;
-            })
-            .join('')}
-        </div>
+  setVisible(root, '[data-el="req-body-wrap"]', Boolean(selected.requestBody));
+  if (selected.requestBody) {
+    setText(root, '[data-el="req-body-label"]', t('Request Body (JSON Schema)', 'கோரிக்கை உள்ளடக்கம் (JSON Schema)'));
+    setText(root, '[data-el="req-body-pre"]', JSON.stringify(selected.requestBody, null, 2));
+  }
 
-        <div class="card card-lg col-span-7 flex-col" style="gap:1.1rem;">
-          <div style="padding-bottom:0.85rem;border-bottom:1px solid var(--surface-container);">
-            <div class="flex-row" style="margin-bottom:0.35rem;">
-              <span class="badge font-mono ${methodBadge(selected.method)}">${escapeHtml(selected.method)}</span>
-              <code class="font-mono" style="font-size:0.88rem;font-weight:800;">${escapeHtml(selected.path)}</code>
-            </div>
-            <h2 style="margin:0;font-size:1rem;font-weight:700;">${escapeHtml(selected.summary)}</h2>
-            <p class="text-xs muted" style="margin:0.3rem 0 0;line-height:1.5;">${escapeHtml(selected.description)}</p>
-          </div>
+  root.querySelectorAll('[data-snip-tab]').forEach((tabBtn) => {
+    tabBtn.classList.toggle('active-white', tabBtn.getAttribute('data-snip-tab') === appState.apiSnippetTab);
+  });
+  setText(root, '[data-el="snippet-pre"]', activeSnippetText(selected));
+  setText(root, '[data-el="copy-label"]', t('Copy', 'நகலெடு'));
 
-          ${
-            selected.requestBody
-              ? `
-            <div>
-              <div class="flex-between text-xs" style="margin-bottom:0.4rem;">
-                <strong>${t('Request Body (JSON Schema)', 'கோரிக்கை உள்ளடக்கம் (JSON Schema)')}</strong>
-                <span class="font-mono muted">application/json</span>
-              </div>
-              <pre class="code-block">${escapeHtml(JSON.stringify(selected.requestBody, null, 2))}</pre>
-            </div>
-          `
-              : ''
-          }
+  const testBtn = qs(root, '#btn-test-endpoint');
+  if (testBtn) testBtn.disabled = Boolean(appState.apiTesting);
+  setVisible(root, '[data-el="test-spinner"]', appState.apiTesting);
+  setVisible(root, '[data-el="test-icon"]', !appState.apiTesting);
+  setText(root, '[data-el="test-label"]', appState.apiTesting
+    ? 'Testing Endpoint...'
+    : `Test Endpoint (${appState.apiMode.toUpperCase()} MODE)`);
 
-          <div>
-            <div class="flex-between" style="padding-bottom:0.35rem;margin-bottom:0.45rem;border-bottom:1px solid var(--surface-container);">
-              <strong class="text-xs" style="text-transform:uppercase;">Implementation Snippets</strong>
-              <div class="segmented-pill">
-                <button type="button" class="segmented-btn ${appState.apiSnippetTab === 'curl' ? 'active-white' : ''}" data-snip-tab="curl">cURL</button>
-                <button type="button" class="segmented-btn ${appState.apiSnippetTab === 'fetch' ? 'active-white' : ''}" data-snip-tab="fetch">Fetch (JS)</button>
-                <button type="button" class="segmented-btn ${appState.apiSnippetTab === 'python' ? 'active-white' : ''}" data-snip-tab="python">Python Requests</button>
-              </div>
-            </div>
-            <div style="position:relative;">
-              <pre class="code-block amber">${escapeHtml(activeSnippetText(selected))}</pre>
-              <button type="button" id="btn-copy-snippet" class="btn" style="position:absolute;top:0.5rem;right:0.5rem;padding:0.25rem 0.55rem;background:#1e293b;color:#e2e8f0;font-size:0.68rem;">
-                <span class="material-symbols-outlined" style="font-size:0.85rem;">content_copy</span>
-                <span>${t('Copy', 'நகலெடு')}</span>
-              </button>
-            </div>
-          </div>
+  setVisible(root, '[data-el="test-result-wrap"]', Boolean(appState.apiTestResult));
+  if (appState.apiTestResult) {
+    setText(root, '[data-el="test-status"]', `${appState.apiTestResult.status} ${appState.apiTestResult.statusText || ''}`);
+    setVisible(root, '[data-el="test-hint"]', Boolean(appState.apiTestResult.hint));
+    if (appState.apiTestResult.hint) setText(root, '[data-el="test-hint"]', appState.apiTestResult.hint);
+    setText(
+      root,
+      '[data-el="test-json"]',
+      JSON.stringify(appState.apiTestResult.data || appState.apiTestResult.simulatedFallback, null, 2)
+    );
+  }
 
-          <div>
-            <button type="button" id="btn-test-endpoint" class="btn btn-secondary" style="width:100%;padding:0.7rem;" ${appState.apiTesting ? 'disabled' : ''}>
-              ${appState.apiTesting ? '<span class="spinner"></span>' : '<span class="material-symbols-outlined" style="font-size:1.05rem;">play_arrow</span>'}
-              <span>${appState.apiTesting ? 'Testing Endpoint...' : `Test Endpoint (${appState.apiMode.toUpperCase()} MODE)`}</span>
-            </button>
-
-            ${
-              appState.apiTestResult
-                ? `
-              <div class="soft-panel flex-col" style="margin-top:0.85rem;gap:0.5rem;">
-                <div class="flex-between text-xs">
-                  <strong>Execution Result:</strong>
-                  <strong class="font-mono" style="color:var(--secondary);">${escapeHtml(appState.apiTestResult.status)} ${escapeHtml(appState.apiTestResult.statusText || '')}</strong>
-                </div>
-                ${appState.apiTestResult.hint ? `<div class="text-xs" style="color:var(--error);font-weight:600;">${escapeHtml(appState.apiTestResult.hint)}</div>` : ''}
-                <pre class="code-block emerald">${escapeHtml(JSON.stringify(appState.apiTestResult.data || appState.apiTestResult.simulatedFallback, null, 2))}</pre>
-              </div>
-            `
-                : ''
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
+  return root;
 }
 
 export function bindApiExplorerEvents() {

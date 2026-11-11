@@ -1,11 +1,11 @@
 import { SCHOOL_DATA } from '../data/mockData.js';
 import {
   appState,
-  escapeHtml,
   setActiveTab,
   t,
   triggerRender
 } from '../state.js';
+import { cloneTemplate, fillSelect, qs, setText, setVisible } from '../utils/dom.js';
 
 export const DASHBOARD_ITEM = {
   id: 'dashboard',
@@ -64,137 +64,92 @@ export const NAV_GROUPS = [
 
 export const NAV_ITEMS = [DASHBOARD_ITEM, ...NAV_GROUPS.flatMap((g) => g.items)];
 
-function renderNavBadge(item) {
-  if (item.badgeType === 'lock') {
-    return appState.progressLockActive
-      ? `<span class="badge badge-error" style="font-size:0.6rem;padding:0.12rem 0.4rem;">LOCK</span>`
-      : `<span class="badge badge-neutral" style="font-size:0.6rem;padding:0.12rem 0.4rem;">OFF</span>`;
-  }
-  if (item.badgeType === 'pending' && appState.pendingEvalCount > 0) {
-    return `<span class="badge badge-tertiary" style="font-size:0.6rem;padding:0.12rem 0.42rem;">${appState.pendingEvalCount}</span>`;
-  }
-  return '';
-}
-
-function renderNavButton(item, nested = false) {
+function createNavButton(item, nested = false) {
+  const btn = cloneTemplate('tpl-sidebar-nav-item');
   const isActive = appState.activeTab === item.id;
-  return `
-    <button
-      type="button"
-      class="nav-item ${nested ? 'nav-item-nested' : ''} ${isActive ? 'active' : ''}"
-      data-nav-tab="${escapeHtml(item.id)}"
-    >
-      <span class="nav-item-left">
-        <span class="material-symbols-outlined" style="font-size:1.05rem;">${item.icon}</span>
-        <span class="nav-item-label">${escapeHtml(t(item.labelEn, item.labelTa))}</span>
-      </span>
-      ${renderNavBadge(item)}
-    </button>
-  `;
+  if (nested) btn.classList.add('nav-item-nested');
+  if (isActive) btn.classList.add('active');
+  btn.setAttribute('data-nav-tab', item.id);
+
+  setText(btn, '[data-el="item-icon"]', item.icon);
+  setText(btn, '[data-el="item-label"]', t(item.labelEn, item.labelTa));
+
+  const badge = qs(btn, '[data-el="item-badge"]');
+  if (item.badgeType === 'lock') {
+    badge.hidden = false;
+    badge.className = `badge ${appState.progressLockActive ? 'badge-error' : 'badge-neutral'}`;
+    badge.textContent = appState.progressLockActive ? 'LOCK' : 'OFF';
+  } else if (item.badgeType === 'pending' && appState.pendingEvalCount > 0) {
+    badge.hidden = false;
+    badge.className = 'badge badge-tertiary';
+    badge.textContent = String(appState.pendingEvalCount);
+  }
+  return btn;
 }
 
 export function renderSidebar() {
-  return `
-    <div id="sidebar-backdrop" class="sidebar-backdrop ${appState.mobileSidebarOpen ? 'open' : ''}"></div>
-    <aside class="sidebar ${appState.mobileSidebarOpen ? 'open' : ''}">
-      <div class="sidebar-top">
-        <div class="sidebar-brand">
-          <div class="brand-logo-box">IQ</div>
-          <div style="min-width:0;">
-            <div class="brand-title">JM Vertex ExamIQ</div>
-            <div class="brand-subtitle">TN State Board Cl. 12</div>
-          </div>
-        </div>
+  const root = cloneTemplate('tpl-sidebar');
+  const backdrop = qs(root, '#sidebar-backdrop');
+  const aside = qs(root, '.sidebar');
 
-        <div class="sidebar-class-box">
-          <div class="class-selector-pill">
-            <div class="flex-row" style="gap:0.35rem;flex-wrap:nowrap;min-width:0;flex:1;">
-              <span class="material-symbols-outlined" style="color:var(--secondary);font-size:1.05rem;flex-shrink:0;">school</span>
-              <select id="sidebar-class-select" class="class-select" aria-label="Select active class">
-                ${SCHOOL_DATA.classes
-                  .map(
-                    (c) => `<option value="${escapeHtml(c.id)}" ${c.id === appState.currentClass.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`
-                  )
-                  .join('')}
-              </select>
-            </div>
-            <span class="ay-badge">${escapeHtml(SCHOOL_DATA.academicYear)}</span>
-          </div>
-        </div>
-      </div>
+  if (appState.mobileSidebarOpen) {
+    backdrop?.classList.add('open');
+    aside?.classList.add('open');
+  }
 
-      <nav class="sidebar-nav" aria-label="Main navigation">
-        ${renderNavButton(DASHBOARD_ITEM, false)}
+  fillSelect(
+    qs(root, '#sidebar-class-select'),
+    SCHOOL_DATA.classes.map((c) => ({ value: c.id, label: c.name })),
+    appState.currentClass.id
+  );
+  setText(root, '[data-el="ay-badge"]', SCHOOL_DATA.academicYear);
 
-        <div class="nav-groups-wrap">
-          ${NAV_GROUPS.map((group) => {
-            const isOpen = !!appState.sidebarOpenGroups[group.key];
-            const hasActiveChild = group.items.some((it) => it.id === appState.activeTab);
-            return `
-              <div class="nav-group ${isOpen ? 'open' : ''}">
-                <button
-                  type="button"
-                  class="nav-group-trigger ${hasActiveChild && !isOpen ? 'has-active' : ''}"
-                  data-toggle-group="${escapeHtml(group.key)}"
-                  aria-expanded="${isOpen ? 'true' : 'false'}"
-                >
-                  <span class="nav-item-left">
-                    <span class="material-symbols-outlined" style="font-size:1.05rem;">${group.icon}</span>
-                    <span class="nav-item-label">${escapeHtml(t(group.labelEn, group.labelTa))}</span>
-                  </span>
-                  <span class="material-symbols-outlined nav-group-chevron">
-                    ${isOpen ? 'expand_less' : 'expand_more'}
-                  </span>
-                </button>
-                ${
-                  isOpen
-                    ? `<div class="nav-group-items">
-                        ${group.items.map((item) => renderNavButton(item, true)).join('')}
-                      </div>`
-                    : ''
-                }
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </nav>
+  qs(root, '[data-el="dashboard-slot"]')?.replaceWith(createNavButton(DASHBOARD_ITEM, false));
 
-      <div class="sidebar-footer">
-        <div class="flex-between" style="gap:0.4rem;">
-          <div class="flex-row" style="gap:0.35rem;color:var(--secondary);font-size:0.72rem;font-weight:700;">
-            <span class="material-symbols-outlined" style="font-size:0.95rem;">verified</span>
-            <span>${t('HSC 2024–25 Engine', 'HSC 2024–25 அமைப்பு')}</span>
-          </div>
-          <span class="badge badge-secondary font-mono" style="font-size:0.6rem;">${escapeHtml(appState.apiMode.toUpperCase())}</span>
-        </div>
-        <button id="btn-signout" type="button" class="btn-signout">
-          <span class="material-symbols-outlined" style="font-size:0.95rem;">logout</span>
-          <span>${t('Switch School / Sign Out', 'பள்ளியை மாற்று / வெளியேறு')}</span>
-        </button>
-      </div>
-    </aside>
-  `;
+  const groupsSlot = qs(root, '[data-el="groups-slot"]');
+  NAV_GROUPS.forEach((group) => {
+    const grp = cloneTemplate('tpl-sidebar-group');
+    const isOpen = !!appState.sidebarOpenGroups[group.key];
+    const hasActiveChild = group.items.some((it) => it.id === appState.activeTab);
+
+    if (isOpen) grp.classList.add('open');
+    const trigger = qs(grp, '.nav-group-trigger');
+    trigger.setAttribute('data-toggle-group', group.key);
+    trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    if (hasActiveChild && !isOpen) trigger.classList.add('has-active');
+
+    setText(grp, '[data-el="group-icon"]', group.icon);
+    setText(grp, '[data-el="group-label"]', t(group.labelEn, group.labelTa));
+    setText(grp, '[data-el="group-chevron"]', isOpen ? 'expand_less' : 'expand_more');
+
+    const itemsWrap = qs(grp, '[data-el="group-items"]');
+    setVisible(grp, '[data-el="group-items"]', isOpen);
+    if (isOpen) {
+      group.items.forEach((item) => itemsWrap.appendChild(createNavButton(item, true)));
+    }
+    groupsSlot.appendChild(grp);
+  });
+
+  setText(root, '[data-el="engine-label"]', t('HSC 2024–25 Engine', 'HSC 2024–25 அமைப்பு'));
+  setText(root, '[data-el="api-mode-badge"]', appState.apiMode.toUpperCase());
+  setText(root, '[data-el="signout-label"]', t('Switch School / Sign Out', 'பள்ளியை மாற்று / வெளியேறு'));
+
+  return root;
 }
 
 export function bindSidebarEvents() {
-  const backdrop = document.getElementById('sidebar-backdrop');
-  if (backdrop) {
-    backdrop.addEventListener('click', () => {
-      appState.mobileSidebarOpen = false;
-      triggerRender();
-    });
-  }
+  document.getElementById('sidebar-backdrop')?.addEventListener('click', () => {
+    appState.mobileSidebarOpen = false;
+    triggerRender();
+  });
 
-  const classSelect = document.getElementById('sidebar-class-select');
-  if (classSelect) {
-    classSelect.addEventListener('change', (e) => {
-      const found = SCHOOL_DATA.classes.find((c) => c.id === e.target.value);
-      if (found) {
-        appState.currentClass = found;
-        triggerRender();
-      }
-    });
-  }
+  document.getElementById('sidebar-class-select')?.addEventListener('change', (e) => {
+    const found = SCHOOL_DATA.classes.find((c) => c.id === e.target.value);
+    if (found) {
+      appState.currentClass = found;
+      triggerRender();
+    }
+  });
 
   document.querySelectorAll('[data-toggle-group]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -210,11 +165,8 @@ export function bindSidebarEvents() {
     });
   });
 
-  const signoutBtn = document.getElementById('btn-signout');
-  if (signoutBtn) {
-    signoutBtn.addEventListener('click', () => {
-      appState.isLoggedIn = false;
-      triggerRender();
-    });
-  }
+  document.getElementById('btn-signout')?.addEventListener('click', () => {
+    appState.isLoggedIn = false;
+    triggerRender();
+  });
 }

@@ -1,0 +1,91 @@
+<template id="tpl-admin-security">
+  <div class="page-container">
+    <header class="flex-between">
+      <div>
+        <div class="flex-row">
+          <h1 class="page-title" data-el="page-title"></h1>
+          <span class="badge badge-secondary">ELCOT Secured</span>
+        </div>
+        <p class="page-subtitle">Multi-school tenant isolation, role-based access control (RBAC), and immutable audit logs.</p>
+      </div>
+
+      <div class="flex-row text-xs" style="color:var(--secondary);font-weight:700;">
+        <span style="width:0.6rem;height:0.6rem;border-radius:50%;background:var(--secondary);"></span>
+        <span data-el="dc-status"></span>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="text-xs" style="font-weight:700;text-transform:uppercase;margin-bottom:0.7rem;">Multi-School Tenancy &amp; School Data Isolation</div>
+      <div class="grid grid-4" data-el="schools-grid"></div>
+    </section>
+
+    <section class="grid grid-3">
+      <div class="card">
+        <div class="flex-row" style="color:var(--secondary);font-weight:700;font-size:0.82rem;margin-bottom:0.35rem;">
+          <span class="material-symbols-outlined">enhanced_encryption</span>
+          <span data-el="sec1-title"></span>
+        </div>
+        <p class="text-xs muted" style="margin:0;line-height:1.5;">256-bit AES database encryption with TLS 1.3 endpoints strictly isolated across school partitions.</p>
+      </div>
+      <div class="card">
+        <div class="flex-row" style="color:var(--primary);font-weight:700;font-size:0.82rem;margin-bottom:0.35rem;">
+          <span class="material-symbols-outlined">admin_panel_settings</span>
+          <span data-el="sec2-title"></span>
+        </div>
+        <p class="text-xs muted" style="margin:0;line-height:1.5;">Strict separation of duties between Teaching Staff, External Evaluators, School Admins, and Students.</p>
+      </div>
+      <div class="card">
+        <div class="flex-row" style="color:var(--tertiary);font-weight:700;font-size:0.82rem;margin-bottom:0.35rem;">
+          <span class="material-symbols-outlined">policy</span>
+          <span data-el="sec3-title"></span>
+        </div>
+        <p class="text-xs muted" style="margin:0;line-height:1.5;">Automated compliance engine prevents unauthorized publication of unapproved AI-generated exam papers.</p>
+      </div>
+    </section>
+
+    <section class="card" style="padding:0;overflow:hidden;">
+      <div class="flex-between" style="padding:0.75rem 1rem;background:var(--surface-container-low);border-bottom:1px solid var(--surface-container);font-size:0.78rem;font-weight:700;">
+        <span data-el="audit-title"></span>
+        <span class="font-mono muted">Compliance: ISO 27001 / TN-DGE</span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Event ID</th>
+              <th data-el="th-user"></th>
+              <th data-el="th-action"></th>
+              <th>Timestamp</th>
+              <th>IP / Terminal</th>
+              <th data-el="th-status"></th>
+            </tr>
+          </thead>
+          <tbody data-el="audit-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</template>
+
+<template id="tpl-admin-school-card">
+  <div class="card" style="padding:0.85rem;cursor:pointer;box-shadow:none;">
+    <div class="flex-between" style="margin-bottom:0.35rem;">
+      <span class="font-mono" style="font-size:0.68rem;color:var(--outline);" data-el="udise"></span>
+      <span class="material-symbols-outlined" style="color:var(--primary);font-size:1rem;" data-el="check-icon" hidden>check_circle</span>
+    </div>
+    <div class="text-xs" style="font-weight:700;line-height:1.3;" data-el="name"></div>
+    <div class="muted" style="font-size:0.7rem;margin-top:0.25rem;" data-el="meta"></div>
+  </div>
+</template>
+
+<template id="tpl-admin-audit-row">
+  <tr>
+    <td class="font-mono" style="font-weight:700;color:var(--primary);" data-el="id"></td>
+    <td><strong data-el="user"></strong></td>
+    <td data-el="action"></td>
+    <td class="font-mono muted" data-el="time"></td>
+    <td class="font-mono muted" data-el="ip"></td>
+    <td><span class="badge badge-secondary" data-el="status"></span></td>
+  </tr>
+</template>
