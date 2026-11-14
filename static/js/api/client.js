@@ -322,6 +322,65 @@ export const apiClient = {
     return VOCATIONAL_MODULES_DATA;
   },
 
+  async getDatasetStatus() {
+    if (getApiMode() === 'live') {
+      try {
+        return await requestJson('/dataset/status');
+      } catch (err) {
+        console.warn('Live dataset status fallback:', err);
+      }
+    }
+    return {
+      status: 'ready',
+      total_files_found: 35,
+      files_ingested: 35,
+      total_canonical_questions: 1361,
+      repeated_questions_detected: 51,
+      questions_with_diagrams: 73,
+      needs_review_count: 17,
+      questions_by_year: { '2021': 283, '2022': 273, '2023': 273, '2024': 267, '2025': 265 },
+      questions_by_subject: {
+        'Physics': 186,
+        'Chemistry': 187,
+        'Commerce': 224,
+        'Accountancy': 220,
+        'Computer Science': 180,
+        'Computer Applications': 181,
+        'Automobile Technology': 183
+      },
+      questions_by_marks: { '1 Marks': 543, '2 Marks': 311, '3 Marks': 318, '5 Marks': 189 }
+    };
+  },
+
+  async regenerateQuestion(payload) {
+    if (getApiMode() === 'live') {
+      try {
+        return await requestJson('/papers/regenerate-question', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.warn('Live regenerate question fallback:', err);
+      }
+    }
+    return {
+      status: 'success',
+      replacementQuestion: {
+        id: 'Q-MOCK-SWAP',
+        no: Number(payload.currentQuestionId) || 1,
+        textEn: 'An alternative standard TN HSC examination question.',
+        textTa: 'மாற்று தமிழ்நாடு மேல்நிலை தேர்வு வினா.',
+        marks: 2,
+        type: 'Short',
+        answer: 'Verified solution step'
+      }
+    };
+  },
+
+  getExportUrl(paperId, format = 'pdf', includeAnswers = false) {
+    return `${API_BASE_URL}/papers/${encodeURIComponent(paperId)}/export/${format}?include_answers=${includeAnswers}`;
+  },
+
   async testEndpoint(ep) {
     if (getApiMode() === 'live') {
       const resolvedPath = ep.path.replace(/:([a-zA-Z]+)/g, 'sample-id');

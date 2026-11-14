@@ -16,6 +16,7 @@ from backend.config import settings
 from backend.routers import (
     admin,
     auth,
+    dataset,
     evaluations,
     homework,
     marks,
@@ -72,6 +73,7 @@ app.add_middleware(
 # Mount all routers under standard /api/v1 prefix
 api_routers = [
     auth.router,
+    dataset.router,
     syllabus.router,
     resources.router,
     questions.router,

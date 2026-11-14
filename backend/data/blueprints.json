@@ -1,0 +1,405 @@
+{
+  "_description": "TN State Board Class 12 HSC Question Paper Blueprints. Each subject defines the standard exam pattern.",
+  "Physics": {
+    "totalMarks": 70,
+    "duration": 180,
+    "parts": [
+      {
+        "name": "Part I",
+        "nameTamil": "பகுதி I",
+        "marks_per_question": 1,
+        "total_questions": 15,
+        "answer_count": 15,
+        "instructions_en": "Answer ALL questions. Choose the most appropriate answer.",
+        "instructions_ta": "அனைத்து வினாக்களுக்கும் விடையளிக்கவும். மிகவும் சரியான விடையைத் தேர்ந்தெடுக்கவும்.",
+        "question_type": "MCQ",
+        "section_marks": 15,
+        "chapter_weightage": {}
+      },
+      {
+        "name": "Part II",
+        "nameTamil": "பகுதி II",
+        "marks_per_question": 2,
+        "total_questions": 9,
+        "answer_count": 6,
+        "instructions_en": "Answer any SIX questions. Question No. 24 is compulsory.",
+        "instructions_ta": "ஏதேனும் ஆறு வினாக்களுக்கு விடையளிக்கவும். வினா எண் 24 கட்டாயம்.",
+        "question_type": "Short",
+        "section_marks": 12,
+        "has_compulsory": true,
+        "compulsory_question_index": 8
+      },
+      {
+        "name": "Part III",
+        "nameTamil": "பகுதி III",
+        "marks_per_question": 3,
+        "total_questions": 9,
+        "answer_count": 6,
+        "instructions_en": "Answer any SIX questions. Question No. 33 is compulsory.",
+        "instructions_ta": "ஏதேனும் ஆறு வினாக்களுக்கு விடையளிக்கவும். வினா எண் 33 கட்டாயம்.",
+        "question_type": "Brief",
+        "section_marks": 18,
+        "has_compulsory": true,
+        "compulsory_question_index": 8
+      },
+      {
+        "name": "Part IV",
+        "nameTamil": "பகுதி IV",
+        "marks_per_question": 5,
+        "total_questions": 5,
+        "answer_count": 5,
+        "instructions_en": "Answer ALL questions. Each question has internal choice (a) or (b).",
+        "instructions_ta": "அனைத்து வினாக்களுக்கும் விடையளிக்கவும். ஒவ்வொரு வினாவிலும் (அ) அல்லது (ஆ) விடையளிக்கவும்.",
+        "question_type": "Either-or",
+        "section_marks": 25,
+        "is_either_or": true
+      }
+    ]
+  },
+  "Chemistry": {
+    "totalMarks": 70,
+    "duration": 180,
+    "parts": [
+      {
+        "name": "Part I",
+        "nameTamil": "பகுதி I",
+        "marks_per_question": 1,
+        "total_questions": 15,
+        "answer_count": 15,
+        "instructions_en": "Answer ALL questions. Choose the most appropriate answer.",
+        "instructions_ta": "அனைத்து வினாக்களுக்கும் விடையளிக்கவும்.",
+        "question_type": "MCQ",
+        "section_marks": 15
+      },
+      {
+        "name": "Part II",
+        "nameTamil": "பகுதி II",
+        "marks_per_question": 2,
+        "total_questions": 9,
+        "answer_count": 6,
+        "instructions_en": "Answer any SIX questions. Question No. 24 is compulsory.",
+        "instructions_ta": "ஏதேனும் ஆறு வினாக்களுக்கு விடையளிக்கவும். வினா எண் 24 கட்டாயம்.",
+        "question_type": "Short",
+        "section_marks": 12,
+        "has_compulsory": true,
+        "compulsory_question_index": 8
+      },
+      {
+        "name": "Part III",
+        "nameTamil": "பகுதி III",
+        "marks_per_question": 3,
+        "total_questions": 9,
+        "answer_count": 6,
+        "instructions_en": "Answer any SIX questions. Question No. 33 is compulsory.",
+        "instructions_ta": "ஏதேனும் ஆறு வினாக்களுக்கு விடையளிக்கவும். வினா எண் 33 கட்டாயம்.",
+        "question_type": "Brief",
+        "section_marks": 18,
+        "has_compulsory": true,
+        "compulsory_question_index": 8
+      },
+      {
+        "name": "Part IV",
+        "nameTamil": "பகுதி IV",
+        "marks_per_question": 5,
+        "total_questions": 5,
+        "answer_count": 5,
+        "instructions_en": "Answer ALL questions.",
+        "instructions_ta": "அனைத்து வினாக்களுக்கும் விடையளிக்கவும்.",
+        "question_type": "Either-or",
+        "section_marks": 25,
+        "is_either_or": true
+      }
+    ]
+  },
+  "Computer Science": {
+    "totalMarks": 70,
+    "duration": 180,
+    "parts": [
+      {
+        "name": "Part I",
+        "nameTamil": "பகுதி I",
+        "marks_per_question": 1,
+        "total_questions": 15,
+        "answer_count": 15,
+        "instructions_en": "Answer ALL questions.",
+        "instructions_ta": "அனைத்து வினாக்களுக்கும் விடையளிக்கவும்.",
+        "question_type": "MCQ",
+        "section_marks": 15
+      },
+      {
+        "name": "Part II",
+        "nameTamil": "பகுதி II",
+        "marks_per_question": 2,
+        "total_questions": 9,
+        "answer_count": 6,
+        "instructions_en": "Answer any SIX questions. Question No. 24 is compulsory.",
+        "instructions_ta": "ஏதேனும் ஆறு வினாக்களுக்கு விடையளிக்கவும். வினா எண் 24 கட்டாயம்.",
+        "question_type": "Short",
+        "section_marks": 12,
+        "has_compulsory": true,
+        "compulsory_question_index": 8
+      },
+      {
+        "name": "Part III",
+        "nameTamil": "பகுதி III",
+        "marks_per_question": 3,
+        "total_questions": 9,
+        "answer_count": 6,
+        "instructions_en": "Answer any SIX questions. Question No. 33 is compulsory.",
+        "instructions_ta": "ஏதேனும் ஆறு வினாக்களுக்கு விடையளிக்கவும். வினா எண் 33 கட்டாயம்.",
+        "question_type": "Brief",
+        "section_marks": 18,
+        "has_compulsory": true,
+        "compulsory_question_index": 8
+      },
+      {
+        "name": "Part IV",
+        "nameTamil": "பகுதி IV",
+        "marks_per_question": 5,
+        "total_questions": 5,
+        "answer_count": 5,
+        "instructions_en": "Answer ALL questions.",
+        "instructions_ta": "அனைத்து வினாக்களுக்கும் விடையளிக்கவும்.",
+        "question_type": "Either-or",
+        "section_marks": 25,
+        "is_either_or": true
+      }
+    ]
+  },
+  "Computer Applications": {
+    "totalMarks": 70,
+    "duration": 180,
+    "parts": [
+      {
+        "name": "Part I",
+        "nameTamil": "பகுதி I",
+        "marks_per_question": 1,
+        "total_questions": 15,
+        "answer_count": 15,
+        "instructions_en": "Answer ALL questions.",
+        "instructions_ta": "அனைத்து வினாக்களுக்கும் விடையளிக்கவும்.",
+        "question_type": "MCQ",
+        "section_marks": 15
+      },
+      {
+        "name": "Part II",
+        "nameTamil": "பகுதி II",
+        "marks_per_question": 2,
+        "total_questions": 9,
+        "answer_count": 6,
+        "instructions_en": "Answer any SIX questions. Question No. 24 is compulsory.",
+        "instructions_ta": "ஏதேனும் ஆறு வினாக்களுக்கு விடையளிக்கவும். வினா எண் 24 கட்டாயம்.",
+        "question_type": "Short",
+        "section_marks": 12,
+        "has_compulsory": true,
+        "compulsory_question_index": 8
+      },
+      {
+        "name": "Part III",
+        "nameTamil": "பகுதி III",
+        "marks_per_question": 3,
+        "total_questions": 9,
+        "answer_count": 6,
+        "instructions_en": "Answer any SIX questions. Question No. 33 is compulsory.",
+        "instructions_ta": "ஏதேனும் ஆறு வினாக்களுக்கு விடையளிக்கவும். வினா எண் 33 கட்டாயம்.",
+        "question_type": "Brief",
+        "section_marks": 18,
+        "has_compulsory": true,
+        "compulsory_question_index": 8
+      },
+      {
+        "name": "Part IV",
+        "nameTamil": "பகுதி IV",
+        "marks_per_question": 5,
+        "total_questions": 5,
+        "answer_count": 5,
+        "instructions_en": "Answer ALL questions.",
+        "instructions_ta": "அனைத்து வினாக்களுக்கும் விடையளிக்கவும்.",
+        "question_type": "Either-or",
+        "section_marks": 25,
+        "is_either_or": true
+      }
+    ]
+  },
+  "Accountancy": {
+    "totalMarks": 90,
+    "duration": 180,
+    "parts": [
+      {
+        "name": "Part I",
+        "nameTamil": "பகுதி I",
+        "marks_per_question": 1,
+        "total_questions": 20,
+        "answer_count": 20,
+        "instructions_en": "Answer ALL questions.",
+        "instructions_ta": "அனைத்து வினாக்களுக்கும் விடையளிக்கவும்.",
+        "question_type": "MCQ",
+        "section_marks": 20
+      },
+      {
+        "name": "Part II",
+        "nameTamil": "பகுதி II",
+        "marks_per_question": 2,
+        "total_questions": 10,
+        "answer_count": 7,
+        "instructions_en": "Answer any SEVEN questions. Question No. 30 is compulsory.",
+        "instructions_ta": "ஏதேனும் ஏழு வினாக்களுக்கு விடையளிக்கவும். வினா எண் 30 கட்டாயம்.",
+        "question_type": "Short",
+        "section_marks": 14,
+        "has_compulsory": true,
+        "compulsory_question_index": 9
+      },
+      {
+        "name": "Part III",
+        "nameTamil": "பகுதி III",
+        "marks_per_question": 3,
+        "total_questions": 10,
+        "answer_count": 7,
+        "instructions_en": "Answer any SEVEN questions. Question No. 40 is compulsory.",
+        "instructions_ta": "ஏதேனும் ஏழு வினாக்களுக்கு விடையளிக்கவும். வினா எண் 40 கட்டாயம்.",
+        "question_type": "Brief",
+        "section_marks": 21,
+        "has_compulsory": true,
+        "compulsory_question_index": 9
+      },
+      {
+        "name": "Part IV",
+        "nameTamil": "பகுதி IV",
+        "marks_per_question": 5,
+        "total_questions": 7,
+        "answer_count": 7,
+        "instructions_en": "Answer ALL questions.",
+        "instructions_ta": "அனைத்து வினாக்களுக்கும் விடையளிக்கவும்.",
+        "question_type": "Either-or",
+        "section_marks": 35,
+        "is_either_or": true
+      }
+    ]
+  },
+  "Commerce": {
+    "totalMarks": 90,
+    "duration": 180,
+    "parts": [
+      {
+        "name": "Part I",
+        "nameTamil": "பகுதி I",
+        "marks_per_question": 1,
+        "total_questions": 20,
+        "answer_count": 20,
+        "instructions_en": "Answer ALL questions.",
+        "instructions_ta": "அனைத்து வினாக்களுக்கும் விடையளிக்கவும்.",
+        "question_type": "MCQ",
+        "section_marks": 20
+      },
+      {
+        "name": "Part II",
+        "nameTamil": "பகுதி II",
+        "marks_per_question": 2,
+        "total_questions": 10,
+        "answer_count": 7,
+        "instructions_en": "Answer any SEVEN questions. Question No. 30 is compulsory.",
+        "instructions_ta": "ஏதேனும் ஏழு வினாக்களுக்கு விடையளிக்கவும். வினா எண் 30 கட்டாயம்.",
+        "question_type": "Short",
+        "section_marks": 14,
+        "has_compulsory": true,
+        "compulsory_question_index": 9
+      },
+      {
+        "name": "Part III",
+        "nameTamil": "பகுதி III",
+        "marks_per_question": 3,
+        "total_questions": 10,
+        "answer_count": 7,
+        "instructions_en": "Answer any SEVEN questions. Question No. 40 is compulsory.",
+        "instructions_ta": "ஏதேனும் ஏழு வினாக்களுக்கு விடையளிக்கவும். வினா எண் 40 கட்டாயம்.",
+        "question_type": "Brief",
+        "section_marks": 21,
+        "has_compulsory": true,
+        "compulsory_question_index": 9
+      },
+      {
+        "name": "Part IV",
+        "nameTamil": "பகுதி IV",
+        "marks_per_question": 5,
+        "total_questions": 7,
+        "answer_count": 7,
+        "instructions_en": "Answer ALL questions.",
+        "instructions_ta": "அனைத்து வினாக்களுக்கும் விடையளிக்கவும்.",
+        "question_type": "Either-or",
+        "section_marks": 35,
+        "is_either_or": true
+      }
+    ]
+  },
+  "Automobile Technology": {
+    "totalMarks": 70,
+    "duration": 180,
+    "parts": [
+      {
+        "name": "Part I",
+        "nameTamil": "பகுதி I",
+        "marks_per_question": 1,
+        "total_questions": 15,
+        "answer_count": 15,
+        "instructions_en": "Answer ALL questions.",
+        "instructions_ta": "அனைத்து வினாக்களுக்கும் விடையளிக்கவும்.",
+        "question_type": "MCQ",
+        "section_marks": 15
+      },
+      {
+        "name": "Part II",
+        "nameTamil": "பகுதி II",
+        "marks_per_question": 2,
+        "total_questions": 9,
+        "answer_count": 6,
+        "instructions_en": "Answer any SIX questions. Question No. 24 is compulsory.",
+        "instructions_ta": "ஏதேனும் ஆறு வினாக்களுக்கு விடையளிக்கவும். வினா எண் 24 கட்டாயம்.",
+        "question_type": "Short",
+        "section_marks": 12,
+        "has_compulsory": true,
+        "compulsory_question_index": 8
+      },
+      {
+        "name": "Part III",
+        "nameTamil": "பகுதி III",
+        "marks_per_question": 3,
+        "total_questions": 9,
+        "answer_count": 6,
+        "instructions_en": "Answer any SIX questions. Question No. 33 is compulsory.",
+        "instructions_ta": "ஏதேனும் ஆறு வினாக்களுக்கு விடையளிக்கவும். வினா எண் 33 கட்டாயம்.",
+        "question_type": "Brief",
+        "section_marks": 18,
+        "has_compulsory": true,
+        "compulsory_question_index": 8
+      },
+      {
+        "name": "Part IV",
+        "nameTamil": "பகுதி IV",
+        "marks_per_question": 5,
+        "total_questions": 5,
+        "answer_count": 5,
+        "instructions_en": "Answer ALL questions.",
+        "instructions_ta": "அனைத்து வினாக்களுக்கும் விடையளிக்கவும்.",
+        "question_type": "Either-or",
+        "section_marks": 25,
+        "is_either_or": true
+      }
+    ]
+  },
+  "_scaling_rules": {
+    "description": "For scaled papers (e.g. 50-mark mid-term), reduce question counts proportionally. The generator handles this automatically.",
+    "50_mark_70_base": {
+      "Part I": {"total_questions": 10, "answer_count": 10, "section_marks": 10},
+      "Part II": {"total_questions": 6, "answer_count": 4, "section_marks": 8},
+      "Part III": {"total_questions": 6, "answer_count": 4, "section_marks": 12},
+      "Part IV": {"total_questions": 4, "answer_count": 4, "section_marks": 20, "is_either_or": true}
+    },
+    "100_mark_90_base": {
+      "Part I": {"total_questions": 20, "answer_count": 20, "section_marks": 20},
+      "Part II": {"total_questions": 12, "answer_count": 8, "section_marks": 16},
+      "Part III": {"total_questions": 12, "answer_count": 8, "section_marks": 24},
+      "Part IV": {"total_questions": 8, "answer_count": 8, "section_marks": 40, "is_either_or": true}
+    }
+  }
+}
+

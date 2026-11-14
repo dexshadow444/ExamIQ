@@ -26,17 +26,28 @@ const QUESTION_VARIANTS = {
   }
 };
 
+let previewLanguageOverride = null;
+
 export function renderPaperGeneratorView() {
   const root = cloneTemplate('tpl-paper-generator');
   const cfg = appState.paperConfig;
   const paper = appState.generatedPaper;
   const taughtCount = appState.chapters.filter((c) => c.status === 'completed' || c.status === 'partially_completed').length;
 
+  // Header & Export Actions
   setText(root, '[data-el="page-title"]', t('AI Question Paper Generator', 'AI வினாத்தாள் உருவாக்கி'));
   setVisible(root, '[data-el="export-actions"]', Boolean(paper));
-  setText(root, '[data-el="print-label"]', t('Print / Export PDF', 'அச்சிடு / PDF ஏற்றுமதி'));
-  setText(root, '[data-el="docx-label"]', t('DOCX Export', 'DOCX ஏற்றுமதி'));
 
+  if (paper?.ai_status) {
+    const aiBadge = qs(root, '[data-el="ai-status-badge"]');
+    if (aiBadge) {
+      aiBadge.hidden = false;
+      aiBadge.textContent = paper.ai_status === 'live' ? 'Groq AI Active' : 'Offline Dataset Mode';
+      aiBadge.className = `badge ${paper.ai_status === 'live' ? 'badge-primary' : 'badge-tertiary'}`;
+    }
+  }
+
+  // Lock Banner
   const banner = qs(root, '[data-el="lock-banner"]');
   if (banner) {
     banner.style.background = appState.progressLockActive ? 'rgba(109, 245, 225, 0.18)' : 'rgba(255, 218, 214, 0.45)';
@@ -49,12 +60,24 @@ export function renderPaperGeneratorView() {
   }
   setText(root, '[data-el="lock-banner-title"]', appState.progressLockActive ? 'Teaching Progress Lock Enforced (Rule 1 Active)' : 'Warning: Progress Lock is Disabled');
   setText(root, '[data-el="lock-banner-desc"]', appState.progressLockActive
-    ? 'Only verified taught units (Ch 1, 2, 3, and 4.1-4.2) will be drawn for this examination.'
+    ? `Only verified taught syllabus units will be drawn for this examination.`
     : 'Questions may be chosen from untaught syllabus topics.');
   const lockBadge = qs(root, '[data-el="lock-banner-badge"]');
   if (lockBadge) {
     lockBadge.className = `badge font-mono ${appState.progressLockActive ? 'badge-secondary' : 'badge-error'}`;
     lockBadge.textContent = appState.progressLockActive ? 'UNTAUGHT EXCLUDED' : 'LOCK BYPASSED';
+  }
+
+  // Fallback Notice Banner
+  const fallbackBanner = qs(root, '[data-el="fallback-banner"]');
+  if (fallbackBanner) {
+    fallbackBanner.hidden = !(paper && paper.ai_status === 'fallback');
+  }
+
+  // Form Controls
+  const subSelect = qs(root, '#pg-subject');
+  if (subSelect) {
+    subSelect.value = cfg.subject || 'Physics';
   }
 
   setText(root, '[data-el="label-title"]', t('Paper Heading / Title', 'வினாத்தாள் தலைப்பு'));
@@ -70,6 +93,28 @@ export function renderPaperGeneratorView() {
   qs(root, '#pg-ratio').value = String(cfg.bookBackRatio);
   qs(root, '#pg-public').checked = Boolean(cfg.includePublicExamQuestions);
 
+  // Dataset Status Panel
+  const dsStats = appState.datasetStatus;
+  if (dsStats) {
+    setText(root, '[data-el="ds-status-badge"]', `${dsStats.files_ingested || 35} Papers / ${dsStats.total_canonical_questions || 1361} Qs`);
+    setText(root, '[data-el="ds-stats-summary"]',
+      `5-Year Public Exam Archive: ${dsStats.total_canonical_questions || 1361} verified questions across 7 subjects with Tamil & English.`
+    );
+    const pillWrap = qs(root, '[data-el="ds-year-pills"]');
+    if (pillWrap && dsStats.questions_by_year) {
+      pillWrap.innerHTML = '';
+      Object.entries(dsStats.questions_by_year).forEach(([yr, cnt]) => {
+        const pill = document.createElement('div');
+        pill.className = 'soft-panel font-mono text-xs';
+        pill.style.padding = '0.2rem 0.3rem';
+        pill.style.fontSize = '0.65rem';
+        pill.innerHTML = `<strong>${yr}</strong><br><span style="color:var(--primary);">${cnt} Qs</span>`;
+        pillWrap.appendChild(pill);
+      });
+    }
+  }
+
+  // Generate Button
   qs(root, '#btn-generate-paper').disabled = Boolean(appState.paperGenerating);
   setVisible(root, '[data-el="gen-spinner"]', appState.paperGenerating);
   setVisible(root, '[data-el="gen-icon"]', !appState.paperGenerating);
@@ -77,30 +122,57 @@ export function renderPaperGeneratorView() {
     ? 'Synthesizing Question Paper...'
     : t('Generate Test Paper', 'தேர்வு வினாத்தாளை உருவாக்கு'));
 
+  // Empty State & Quick Demo
   setVisible(root, '[data-el="empty-state"]', !paper && !appState.paperGenerating);
-  setText(root, '#btn-quick-demo-paper', `Quick Demo: Generate ${cfg.totalMarks}-Mark Mid-Term`);
+  setText(root, '#btn-quick-demo-paper', `Quick Demo: Generate ${cfg.totalMarks}-Mark ${cfg.subject || 'Physics'} Paper`);
 
+  // Loading State
   setVisible(root, '[data-el="loading-state"]', appState.paperGenerating);
-  setText(root, '[data-el="loading-title"]', `Validating against Teaching Progress Lock (${taughtCount} eligible units)...`);
 
+  // Paper Card
   const hasPaper = Boolean(paper && !appState.paperGenerating);
   setVisible(root, '[data-el="paper-card"]', hasPaper);
+
   if (hasPaper) {
     qs(root, '#tab-paper-view')?.classList.toggle('active-white', appState.paperPreviewTab === 'paper');
     qs(root, '#tab-rubric-view')?.classList.toggle('active-white', appState.paperPreviewTab === 'rubric');
     setText(root, '[data-el="paper-id"]', paper.paperId);
 
+    // Coverage Strip
+    const cov = paper.coverage_report;
+    if (cov) {
+      if (cov.percentage_per_year) {
+        const yrSummary = Object.entries(cov.percentage_per_year)
+          .map(([y, p]) => `${y}: ${p}%`)
+          .join(' • ');
+        setText(root, '[data-el="cov-years"]', yrSummary);
+      }
+      setText(root, '[data-el="cov-bb"]', `${cov.book_back_percentage || 60}%`);
+      if (cov.marks_per_difficulty) {
+        const diffSummary = Object.entries(cov.marks_per_difficulty)
+          .map(([d, m]) => `${d}: ${m}M`)
+          .join(', ');
+        setText(root, '[data-el="cov-diff"]', diffSummary);
+      }
+      setVisible(root, '[data-el="cov-rule1-badge"]', Boolean(cov.rule1_compliant));
+      setVisible(root, '[data-el="cov-cap-badge"]', Boolean(cov.year_cap_compliant));
+    }
+
     const isPaperPane = appState.paperPreviewTab === 'paper';
     setVisible(root, '[data-el="paper-pane"]', isPaperPane);
     setVisible(root, '[data-el="rubric-pane"]', !isPaperPane);
 
+    const activeLang = previewLanguageOverride || cfg.language || 'bilingual';
+
     if (isPaperPane) {
       setText(root, '[data-el="paper-title"]', paper.title);
-      setText(root, '[data-el="paper-meta"]', `Subject: Mathematics / கணிதம் • Max Marks: ${paper.totalMarks} • Time: ${paper.durationMinutes} Minutes`);
+      setText(root, '[data-el="paper-meta"]',
+        `Subject: ${paper.subject} • Max Marks: ${paper.totalMarks} • Time: ${paper.durationMinutes} Minutes • Class: ${appState.currentClass?.name || 'Class 12'}`
+      );
       const secWrap = qs(root, '[data-el="paper-sections"]');
       paper.sections.forEach((sec) => {
         const secEl = cloneTemplate('tpl-pg-section');
-        setText(secEl, '[data-el="sec-name"]', sec.name);
+        setText(secEl, '[data-el="sec-name"]', `${sec.name} (${sec.nameTamil || ''}) — ${sec.totalMarks} Marks`);
         setText(secEl, '[data-el="sec-instructions"]', sec.instructions);
         const qList = qs(secEl, '[data-el="sec-questions"]');
 
@@ -108,13 +180,16 @@ export function renderPaperGeneratorView() {
           const qEl = cloneTemplate('tpl-pg-question');
           const isLocked = appState.lockedPaperQuestions.includes(q.no);
           setText(qEl, '[data-el="q-no"]', `${q.no}.`);
-          setVisible(qEl, '[data-el="q-en"]', cfg.language !== 'ta');
-          setText(qEl, '[data-el="q-en"]', q.textEn);
-          setVisible(qEl, '[data-el="q-ta"]', cfg.language !== 'en');
-          setText(qEl, '[data-el="q-ta"]', q.textTa);
 
+          // Language Visibility
+          setVisible(qEl, '[data-el="q-en"]', activeLang !== 'ta');
+          setText(qEl, '[data-el="q-en"]', q.textEn || q.text_en);
+          setVisible(qEl, '[data-el="q-ta"]', activeLang !== 'en');
+          setText(qEl, '[data-el="q-ta"]', q.textTa || q.text_ta);
+
+          // Options
           const optsEl = qs(qEl, '[data-el="q-options"]');
-          setVisible(qEl, '[data-el="q-options"]', Boolean(q.options));
+          setVisible(qEl, '[data-el="q-options"]', Boolean(q.options && q.options.length));
           if (q.options) {
             q.options.forEach((opt, i) => {
               const oEl = cloneTemplate('tpl-pg-mcq-opt');
@@ -123,8 +198,32 @@ export function renderPaperGeneratorView() {
             });
           }
 
-          setText(qEl, '[data-el="q-marks"]', `[${q.marks}]`);
+          // Marks and Badges
+          const compTag = q.isCompulsory ? ' [Compulsory]' : '';
+          const eitherTag = q.isEitherOr ? ' [Either/Or]' : '';
+          setText(qEl, '[data-el="q-marks"]', `[${q.marks} M]${compTag}${eitherTag}`);
 
+          const badgeEl = qs(qEl, '[data-el="q-source-badge"]');
+          if (badgeEl) {
+            if (q.preview) {
+              badgeEl.className = 'badge badge-error';
+              badgeEl.textContent = 'HOTS Preview';
+            } else if (q.source?.startsWith('past-paper:')) {
+              const yr = q.source.split(':')[1];
+              badgeEl.className = 'badge badge-primary';
+              badgeEl.textContent = `DGE ${yr}`;
+            } else if (q.source === 'modified') {
+              badgeEl.className = 'badge badge-secondary';
+              badgeEl.textContent = 'AI Variant';
+            } else {
+              badgeEl.className = 'badge';
+              badgeEl.textContent = q.source || 'Standard';
+            }
+          }
+
+          setText(qEl, '[data-el="q-chapter-tag"]', `${q.chapter || ''} • ${q.difficulty || 'Medium'}`);
+
+          // Swap & Lock buttons
           const swapBtn = qs(qEl, '[data-el="btn-swap"]');
           if (swapBtn) {
             swapBtn.setAttribute('data-swap-q', String(q.no));
@@ -138,7 +237,7 @@ export function renderPaperGeneratorView() {
             lockBtn.style.fontWeight = isLocked ? '700' : '600';
           }
           setText(qEl, '[data-el="lock-icon"]', isLocked ? 'lock' : 'lock_open');
-          setText(qEl, '[data-el="lock-text"]', isLocked ? 'Locked (Unlock)' : 'Lock Question');
+          setText(qEl, '[data-el="lock-text"]', isLocked ? 'Locked (Unlock)' : 'Lock');
 
           qList.appendChild(qEl);
         });
@@ -149,12 +248,16 @@ export function renderPaperGeneratorView() {
       const rubWrap = qs(root, '[data-el="rubric-sections"]');
       paper.sections.forEach((sec) => {
         const rsEl = cloneTemplate('tpl-pg-rubric-section');
-        setText(rsEl, '[data-el="sec-name"]', sec.name);
+        setText(rsEl, '[data-el="sec-name"]', `${sec.name} — Scoring Rubrics`);
         const rowsWrap = qs(rsEl, '[data-el="rubric-rows"]');
         sec.questions.forEach((q) => {
           const rowEl = cloneTemplate('tpl-pg-rubric-row');
           setText(rowEl, '[data-el="q-no"]', `Q.${q.no}`);
-          setText(rowEl, '[data-el="q-detail"]', `${q.chapter || q.type} — ${q.answer || 'Stepwise solution key verified'}`);
+          const scheme = q.markingScheme || q.marking_scheme || [];
+          const schemeText = scheme.length > 0
+            ? scheme.map((s) => `${s.step} [${s.marks}M]`).join(' | ')
+            : (q.answer || 'Stepwise solution key verified');
+          setText(rowEl, '[data-el="q-detail"]', `${q.chapter || q.type}: ${schemeText}`);
           setText(rowEl, '[data-el="q-marks"]', `${q.marks} M`);
           rowsWrap.appendChild(rowEl);
         });
@@ -167,10 +270,42 @@ export function renderPaperGeneratorView() {
 }
 
 export function bindPaperGeneratorEvents() {
-  document.getElementById('pg-title')?.addEventListener('input', (e) => { appState.paperConfig.title = e.target.value; });
-  document.getElementById('pg-marks')?.addEventListener('change', (e) => { appState.paperConfig.totalMarks = Number(e.target.value); });
-  document.getElementById('pg-duration')?.addEventListener('change', (e) => { appState.paperConfig.durationMinutes = Number(e.target.value); });
-  document.getElementById('pg-public')?.addEventListener('change', (e) => { appState.paperConfig.includePublicExamQuestions = e.target.checked; });
+  // Load dataset status on mount if not loaded
+  if (!appState.datasetStatus && !appState.datasetStatusLoading) {
+    appState.datasetStatusLoading = true;
+    apiClient.getDatasetStatus().then((ds) => {
+      appState.datasetStatus = ds;
+      appState.datasetStatusLoading = false;
+      triggerRender();
+    }).catch(() => {
+      appState.datasetStatusLoading = false;
+    });
+  }
+
+  // Subject change
+  document.getElementById('pg-subject')?.addEventListener('change', (e) => {
+    appState.paperConfig.subject = e.target.value;
+    appState.paperConfig.title = `Class 12 Examination — ${e.target.value}`;
+    const titleInput = document.getElementById('pg-title');
+    if (titleInput) titleInput.value = appState.paperConfig.title;
+    triggerRender();
+  });
+
+  document.getElementById('pg-title')?.addEventListener('input', (e) => {
+    appState.paperConfig.title = e.target.value;
+  });
+
+  document.getElementById('pg-marks')?.addEventListener('change', (e) => {
+    appState.paperConfig.totalMarks = Number(e.target.value);
+  });
+
+  document.getElementById('pg-duration')?.addEventListener('change', (e) => {
+    appState.paperConfig.durationMinutes = Number(e.target.value);
+  });
+
+  document.getElementById('pg-public')?.addEventListener('change', (e) => {
+    appState.paperConfig.includePublicExamQuestions = e.target.checked;
+  });
 
   document.getElementById('pg-ratio')?.addEventListener('input', (e) => {
     appState.paperConfig.bookBackRatio = Number(e.target.value);
@@ -180,27 +315,47 @@ export function bindPaperGeneratorEvents() {
 
   document.getElementById('pg-language')?.addEventListener('change', (e) => {
     appState.paperConfig.language = e.target.value;
+    previewLanguageOverride = null;
     triggerRender();
   });
 
+  // Language Preview Toggles
+  document.getElementById('btn-toggle-bilingual')?.addEventListener('click', () => {
+    previewLanguageOverride = 'bilingual';
+    triggerRender();
+  });
+  document.getElementById('btn-toggle-en')?.addEventListener('click', () => {
+    previewLanguageOverride = 'en';
+    triggerRender();
+  });
+  document.getElementById('btn-toggle-ta')?.addEventListener('click', () => {
+    previewLanguageOverride = 'ta';
+    triggerRender();
+  });
+
+  // Generate Action
   const executeGenerate = async () => {
     appState.paperGenerating = true;
     triggerRender();
-    showToast('AI Exam Engine generating TN State Board blueprint...', 'info');
+    showToast(`Synthesizing ${appState.paperConfig.subject || 'Physics'} paper from 5-Year Archive...`, 'info');
+
     try {
       const taughtCount = appState.chapters.filter((c) => c.status === 'completed' || c.status === 'partially_completed').length;
-      const generated = await apiClient.generatePaper(
-        {
-          ...appState.paperConfig,
-          classId: appState.currentClass.id,
-          taughtTopicsOnly: appState.progressLockActive
-        },
-        taughtCount
-      );
+      const payload = {
+        ...appState.paperConfig,
+        classId: appState.currentClass?.id || '12-A',
+        taughtTopicsOnly: appState.progressLockActive,
+        enrichmentPreviewAllowed: appState.enrichmentPreviewAllowed || false,
+        includePublicExamArchives: appState.paperConfig.includePublicExamQuestions,
+        subject: appState.paperConfig.subject || 'Physics'
+      };
+
+      const generated = await apiClient.generatePaper(payload, taughtCount);
       appState.generatedPaper = generated;
-      showToast('Question Paper Generated Successfully!', 'success');
+      showToast(`Question Paper Generated (${generated.totalMarks} Marks, ${generated.sections?.length || 4} Parts)!`, 'success');
     } catch (err) {
-      showToast('Error generating paper', 'error');
+      console.error('Error generating paper:', err);
+      showToast('Error generating paper. Using offline fallback.', 'error');
     } finally {
       appState.paperGenerating = false;
       triggerRender();
@@ -210,11 +365,34 @@ export function bindPaperGeneratorEvents() {
   document.getElementById('btn-generate-paper')?.addEventListener('click', executeGenerate);
   document.getElementById('btn-quick-demo-paper')?.addEventListener('click', executeGenerate);
 
-  document.getElementById('btn-print-paper')?.addEventListener('click', () => window.print());
-  document.getElementById('btn-export-docx')?.addEventListener('click', () => {
-    showToast('Exported to Microsoft Word (.docx) with editable formatting', 'success');
+  // Export PDF & DOCX buttons
+  document.getElementById('btn-export-pdf')?.addEventListener('click', () => {
+    const paper = appState.generatedPaper;
+    if (!paper) return;
+    const url = apiClient.getExportUrl(paper.paperId, 'pdf', false);
+    showToast('Downloading high-fidelity Question Paper PDF...', 'info');
+    window.open(url, '_blank');
   });
 
+  document.getElementById('btn-export-pdf-key')?.addEventListener('click', () => {
+    const paper = appState.generatedPaper;
+    if (!paper) return;
+    const url = apiClient.getExportUrl(paper.paperId, 'pdf', true);
+    showToast('Downloading official Answer Key PDF...', 'info');
+    window.open(url, '_blank');
+  });
+
+  document.getElementById('btn-export-docx')?.addEventListener('click', () => {
+    const paper = appState.generatedPaper;
+    if (!paper) return;
+    const url = apiClient.getExportUrl(paper.paperId, 'docx', false);
+    showToast('Downloading Microsoft Word (.docx) Question Paper...', 'info');
+    window.open(url, '_blank');
+  });
+
+  document.getElementById('btn-print-paper')?.addEventListener('click', () => window.print());
+
+  // Tabs
   document.getElementById('tab-paper-view')?.addEventListener('click', () => {
     appState.paperPreviewTab = 'paper';
     triggerRender();
@@ -224,51 +402,68 @@ export function bindPaperGeneratorEvents() {
     triggerRender();
   });
 
+  // Swap Question Event (Live API + Mock Support)
   document.querySelectorAll('[data-swap-q]').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const qNo = Number(btn.getAttribute('data-swap-q'));
       if (appState.lockedPaperQuestions.includes(qNo)) {
         showToast(`Q.${qNo} is locked and cannot be swapped.`, 'warning');
         return;
       }
       const paper = appState.generatedPaper;
-      if (paper?.sections) {
+      if (!paper?.sections) return;
+
+      btn.disabled = true;
+      showToast(`Regenerating equivalent question for Q.${qNo}...`, 'info');
+
+      try {
+        // Attempt live API swap
+        const swapResult = await apiClient.regenerateQuestion({
+          paperId: paper.paperId,
+          currentQuestionId: String(qNo),
+          reason: 'Teacher requested alternative variant'
+        });
+
+        if (swapResult?.replacementQuestion) {
+          const rep = swapResult.replacementQuestion;
+          for (const sec of paper.sections) {
+            const targetQ = sec.questions.find((q) => q.no === qNo);
+            if (targetQ) {
+              targetQ.textEn = rep.textEn || rep.text_en;
+              targetQ.textTa = rep.textTa || rep.text_ta;
+              if (rep.options) targetQ.options = rep.options;
+              if (rep.answer) targetQ.answer = rep.answer;
+              if (rep.chapter) targetQ.chapter = rep.chapter;
+              if (rep.source) targetQ.source = rep.source;
+              if (rep.markingScheme) targetQ.markingScheme = rep.markingScheme;
+              targetQ._swapped = true;
+              break;
+            }
+          }
+          showToast(`Swapped Q.${qNo} with past-paper variant!`, 'success');
+        }
+      } catch (err) {
+        // Fallback local swap
+        const alt = QUESTION_VARIANTS[qNo];
         for (const sec of paper.sections) {
           const targetQ = sec.questions.find((q) => q.no === qNo);
-          if (targetQ) {
-            const alt = QUESTION_VARIANTS[qNo];
-            if (alt && !targetQ._swapped) {
-              targetQ._orig = { textEn: targetQ.textEn, textTa: targetQ.textTa, options: targetQ.options, answer: targetQ.answer };
-              targetQ.textEn = alt.textEn;
-              targetQ.textTa = alt.textTa;
-              if (alt.options) targetQ.options = alt.options;
-              if (alt.answer) targetQ.answer = alt.answer;
-              targetQ._swapped = true;
-            } else if (targetQ._orig) {
-              targetQ.textEn = targetQ._orig.textEn;
-              targetQ.textTa = targetQ._orig.textTa;
-              targetQ.options = targetQ._orig.options;
-              targetQ.answer = targetQ._orig.answer;
-              targetQ._swapped = false;
-            } else {
-              const bankPool = appState.questions.filter((bq) => bq.marks === targetQ.marks && bq.questionEn !== targetQ.textEn);
-              if (bankPool.length > 0) {
-                const idx = (appState.paperVariantOffsets[qNo] || 0) % bankPool.length;
-                appState.paperVariantOffsets[qNo] = idx + 1;
-                targetQ.textEn = bankPool[idx].questionEn;
-                targetQ.textTa = bankPool[idx].questionTa;
-                targetQ.answer = bankPool[idx].answerKey;
-              }
-            }
+          if (targetQ && alt) {
+            targetQ.textEn = alt.textEn;
+            targetQ.textTa = alt.textTa;
+            if (alt.options) targetQ.options = alt.options;
+            if (alt.answer) targetQ.answer = alt.answer;
             break;
           }
         }
+        showToast(`Replaced Q.${qNo} with local variant`, 'info');
+      } finally {
+        btn.disabled = false;
+        triggerRender();
       }
-      showToast(`Regenerated equivalent variant for Q.${qNo}`, 'success');
-      triggerRender();
     });
   });
 
+  // Lock Question Event
   document.querySelectorAll('[data-lock-q]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const qNo = Number(btn.getAttribute('data-lock-q'));

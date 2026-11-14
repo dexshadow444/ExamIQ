@@ -1,0 +1,288 @@
+{
+  "files": {
+    "2021 qp\\2021_accountancy_QP.pdf": {
+      "hash": "16f141fcef030a6d1211c961b0cc10308798c4c5c842190b438b2e0b0d9e1044",
+      "mtime": 1794644168.4732258,
+      "questions_count": 47,
+      "subject": "Accountancy",
+      "year": "2021",
+      "status": "success"
+    },
+    "2021 qp\\2021_automobile_QP.pdf": {
+      "hash": "55d35dd96c3461a4fe4126177378f7fe0246c581130e97536cbec51f537adb05",
+      "mtime": 1794644168.474225,
+      "questions_count": 37,
+      "subject": "Automobile Technology",
+      "year": "2021",
+      "status": "success"
+    },
+    "2021 qp\\2021_chemistry_QP.pdf": {
+      "hash": "171a957977d08ef8112d2325145afb9e0e97cd61f6453fa1ba73e630c0738b4b",
+      "mtime": 1794644168.4767127,
+      "questions_count": 38,
+      "subject": "Chemistry",
+      "year": "2021",
+      "status": "success"
+    },
+    "2021 qp\\2021_commerce_QP.pdf": {
+      "hash": "66821ae0910f1c61f6ba193d53526e03403b74af98f84f1a07b53f9a86215d20",
+      "mtime": 1794644168.4777133,
+      "questions_count": 47,
+      "subject": "Commerce",
+      "year": "2021",
+      "status": "success"
+    },
+    "2021 qp\\2021_computer_application_QP.pdf": {
+      "hash": "82346bc87a5fc719922b5a57ec44a84427b7af7c470623412c1b3020a84c12c7",
+      "mtime": 1794644168.478714,
+      "questions_count": 38,
+      "subject": "Computer Applications",
+      "year": "2021",
+      "status": "success"
+    },
+    "2021 qp\\2021_computer_science_QP.pdf": {
+      "hash": "ecd2c886d7b92fdfdb674c027137bf123a6e2afba630ef27e97445568fd23008",
+      "mtime": 1794644168.4797173,
+      "questions_count": 38,
+      "subject": "Computer Science",
+      "year": "2021",
+      "status": "success"
+    },
+    "2021 qp\\2021_Physics_QP.pdf": {
+      "hash": "49f7c02cc3dbb011de212307ff2a23f836af9667f49e3b009dd487ce25e32e7d",
+      "mtime": 1794644168.470225,
+      "questions_count": 38,
+      "subject": "Physics",
+      "year": "2021",
+      "status": "success"
+    },
+    "2022 qp\\2022_accountancy_QP.pdf": {
+      "hash": "c91a66220a7525f047620b1a1a48fa96e3715b50d8c0d46ead1df7b72dcc3f07",
+      "mtime": 1794644168.4841142,
+      "questions_count": 47,
+      "subject": "Accountancy",
+      "year": "2022",
+      "status": "success"
+    },
+    "2022 qp\\2022_automobile_QP.pdf": {
+      "hash": "bbacd9516215dcca4267b83b65df98bbd68eae2e1e24bcbd0f2eb35aa5224d06",
+      "mtime": 1794644168.4856071,
+      "questions_count": 37,
+      "subject": "Automobile Technology",
+      "year": "2022",
+      "status": "success"
+    },
+    "2022 qp\\2022_chemistry_QP.pdf": {
+      "hash": "4bc17cd40959fd7dff4bbd545ab897f2e035869f0cbeabc7cddfb0796552f01f",
+      "mtime": 1794644168.48665,
+      "questions_count": 38,
+      "subject": "Chemistry",
+      "year": "2022",
+      "status": "success"
+    },
+    "2022 qp\\2022_commerce_QP.pdf": {
+      "hash": "a8a4a41f787ae96331aa5b4566144d509ff9b740f755caff597207254569e0e5",
+      "mtime": 1794644168.4877179,
+      "questions_count": 47,
+      "subject": "Commerce",
+      "year": "2022",
+      "status": "success"
+    },
+    "2022 qp\\2022_computer_application_QP.pdf": {
+      "hash": "06b0ae418497f9d2d1c48b420c3edf20e681100a312588592af114269081ad54",
+      "mtime": 1794644168.4887195,
+      "questions_count": 38,
+      "subject": "Computer Applications",
+      "year": "2022",
+      "status": "success"
+    },
+    "2022 qp\\2022_computer_science_QP.pdf": {
+      "hash": "9ee46c4f6fab30265789d01d9c754e01a6a3d0dc083cc98327f422bd011283f2",
+      "mtime": 1794644168.490112,
+      "questions_count": 38,
+      "subject": "Computer Science",
+      "year": "2022",
+      "status": "success"
+    },
+    "2022 qp\\2022_Physics_QP.pdf": {
+      "hash": "5659c968bb1994e6cd8e07ed18265bb379bbd04ad679b56b3af0a1e6418894ce",
+      "mtime": 1794644168.4807217,
+      "questions_count": 38,
+      "subject": "Physics",
+      "year": "2022",
+      "status": "success"
+    },
+    "2023 qp\\2023_accountancy_QP.pdf": {
+      "hash": "a586c343db8c91b612ee78014a7f476d5c21b8ef2fe31706930e2d116112b582",
+      "mtime": 1794644168.495999,
+      "questions_count": 47,
+      "subject": "Accountancy",
+      "year": "2023",
+      "status": "success"
+    },
+    "2023 qp\\2023_automobile_QP.pdf": {
+      "hash": "cdd9338f5efd4f9c4dfef1dd549dc6c07d0a76f1755ec975fbc9e74702f195bb",
+      "mtime": 1794644168.4979799,
+      "questions_count": 37,
+      "subject": "Automobile Technology",
+      "year": "2023",
+      "status": "success"
+    },
+    "2023 qp\\2023_chemistry_QP.pdf": {
+      "hash": "71eaea4247e4d991895a6e8783b5dd6e0cde4cbc2bd24aff5228507dca70d046",
+      "mtime": 1794644168.5003817,
+      "questions_count": 38,
+      "subject": "Chemistry",
+      "year": "2023",
+      "status": "success"
+    },
+    "2023 qp\\2023_commerce_QP.pdf": {
+      "hash": "0abadc2a6c2910c6ddffd1b28a1c51b5163b26cfc0e628d9c1937daea43e1149",
+      "mtime": 1794644168.5014021,
+      "questions_count": 47,
+      "subject": "Commerce",
+      "year": "2023",
+      "status": "success"
+    },
+    "2023 qp\\2023_computer_application_QP.pdf": {
+      "hash": "5417f9a293d9140ad4b5f8d4a44ccb1650bd25d13808019bd4424a5b48cabbc8",
+      "mtime": 1794644168.5033994,
+      "questions_count": 38,
+      "subject": "Computer Applications",
+      "year": "2023",
+      "status": "success"
+    },
+    "2023 qp\\2023_computer_science_QP.pdf": {
+      "hash": "b2e11a54dc291404b01f6db33090de9a66114a0a3bab2f6c407f6999285a97d2",
+      "mtime": 1794644168.5046887,
+      "questions_count": 38,
+      "subject": "Computer Science",
+      "year": "2023",
+      "status": "success"
+    },
+    "2023 qp\\2023_Physics_QP.pdf": {
+      "hash": "6d1c18105f762b6be4e71aaa0e2868b2d435e8a0922aef67e18c340e11adff6b",
+      "mtime": 1794644168.4925568,
+      "questions_count": 38,
+      "subject": "Physics",
+      "year": "2023",
+      "status": "success"
+    },
+    "2024 qp\\2024_accountancy_QP.pdf": {
+      "hash": "37f821c4706d9874b8bf8dcabf8c5a7d830959e210da1c311b313144e55bf472",
+      "mtime": 1794644168.5108209,
+      "questions_count": 47,
+      "subject": "Accountancy",
+      "year": "2024",
+      "status": "success"
+    },
+    "2024 qp\\2024_automobile_QP.pdf": {
+      "hash": "e3a9c65237c1db8692d9b34bc7c72d9b4a3ddb6ff44a72d96092ff189104ecfa",
+      "mtime": 1794644168.5118196,
+      "questions_count": 37,
+      "subject": "Automobile Technology",
+      "year": "2024",
+      "status": "success"
+    },
+    "2024 qp\\2024_chemistry_QP.pdf": {
+      "hash": "b0c9dac1114a1d59357771695993ad6deaeee416236fd4dcad11229aabe197a2",
+      "mtime": 1794644168.51282,
+      "questions_count": 38,
+      "subject": "Chemistry",
+      "year": "2024",
+      "status": "success"
+    },
+    "2024 qp\\2024_commerce_QP.pdf": {
+      "hash": "1cb6be1c2a42d3afb4a0e0c117082d07a9d085482ca67b9d4f2f211d8893900f",
+      "mtime": 1794644168.5138292,
+      "questions_count": 47,
+      "subject": "Commerce",
+      "year": "2024",
+      "status": "success"
+    },
+    "2024 qp\\2024_computer_application_QP.pdf": {
+      "hash": "0e26de1ee0d3f0de1cff7188cc9412b4b4f9459f483cd1623bfb5ccb83d41740",
+      "mtime": 1794644168.5148213,
+      "questions_count": 38,
+      "subject": "Computer Applications",
+      "year": "2024",
+      "status": "success"
+    },
+    "2024 qp\\2024_computer_science_QP.pdf": {
+      "hash": "7dd239c70ef7c2f2a64b7cf66d070d7c2a24f20406f3196b9273b4efb40df260",
+      "mtime": 1794644168.5158188,
+      "questions_count": 38,
+      "subject": "Computer Science",
+      "year": "2024",
+      "status": "success"
+    },
+    "2024 qp\\2024_Physics_QP.pdf": {
+      "hash": "a632d317d2104013ff59b95d7311c0078e294cee5dea6d0a9a75632c8087a6d1",
+      "mtime": 1794644168.50682,
+      "questions_count": 38,
+      "subject": "Physics",
+      "year": "2024",
+      "status": "success"
+    },
+    "2025 qp\\2025_accountancy_QP.pdf": {
+      "hash": "a826a3fe2c17b9865612e6b74c55a80c02377e42e29b4e85f248d7530c6504d6",
+      "mtime": 1794644168.5238223,
+      "questions_count": 47,
+      "subject": "Accountancy",
+      "year": "2025",
+      "status": "success"
+    },
+    "2025 qp\\2025_automobile_QP.pdf": {
+      "hash": "edf3dfd983ce2fb4b01e7f97885aaa7ac5306e62899f0fa10d079d7f04c90de2",
+      "mtime": 1794644168.5248168,
+      "questions_count": 37,
+      "subject": "Automobile Technology",
+      "year": "2025",
+      "status": "success"
+    },
+    "2025 qp\\2025_chemistry_QP.pdf": {
+      "hash": "ad8224863125fa5d99cfa4b0368a99bba07c486c4ac2fed7132d38255f875557",
+      "mtime": 1794644168.5258205,
+      "questions_count": 38,
+      "subject": "Chemistry",
+      "year": "2025",
+      "status": "success"
+    },
+    "2025 qp\\2025_commerce_QP.pdf": {
+      "hash": "25e5020d910043b707b6e163e4e9a6b22100dc9aaf4bfdbce69c69250814a3c6",
+      "mtime": 1794644168.5272877,
+      "questions_count": 47,
+      "subject": "Commerce",
+      "year": "2025",
+      "status": "success"
+    },
+    "2025 qp\\2025_computer_application_QP.pdf": {
+      "hash": "960914beccf3d84dd804853b6f51719f278d863fafa049d9e4d3ca94a33c325e",
+      "mtime": 1794644168.5283418,
+      "questions_count": 38,
+      "subject": "Computer Applications",
+      "year": "2025",
+      "status": "success"
+    },
+    "2025 qp\\2025_computer_science_QP.pdf": {
+      "hash": "7b555dd02b0f9e7dfe60661af3fbb14648225533b2b373d5cc620d31d013cc50",
+      "mtime": 1794644168.529361,
+      "questions_count": 38,
+      "subject": "Computer Science",
+      "year": "2025",
+      "status": "success"
+    },
+    "2025 qp\\2025_Physics_QP.pdf": {
+      "hash": "2a3bd67f3880577f3f5fe06e3f3efa15a63a153d2d9f6405b4fe095394f37e8c",
+      "mtime": 1794644168.5188236,
+      "questions_count": 38,
+      "subject": "Physics",
+      "year": "2025",
+      "status": "success"
+    }
+  },
+  "last_updated": null,
+  "total_questions": 1361,
+  "total_files_found": 35,
+  "failed_files": []
+}

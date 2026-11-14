@@ -25,3 +25,4 @@ venv/
 powershell
 .DS_Store
 
+backend/data/llm_cache.json

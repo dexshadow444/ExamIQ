@@ -123,15 +123,19 @@ class PaperGenerateRequest(BaseModel):
     title: Optional[str] = "Class 12 Mid-Term Examination — Mathematics"
     classId: Optional[str] = "12-A"
     testType: Optional[str] = "Mid-Term"
+    subject: Optional[str] = None
     totalMarks: Optional[int] = 50
     durationMinutes: Optional[int] = 90
+    duration: Optional[int] = None
     language: Optional[str] = "bilingual"
     blueprint: Optional[Dict[str, Any]] = None
     taughtTopicsOnly: Optional[bool] = True
+    enrichmentPreviewAllowed: Optional[bool] = False
     includeBookBackRatio: Optional[float] = 0.6
     bookBackRatio: Optional[int] = 60
     includePublicExamQuestions: Optional[bool] = True
     includePublicExamArchives: Optional[bool] = True
+    includePublicExamArchive: Optional[bool] = None
     difficultyMix: Optional[Dict[str, int]] = None
 
 

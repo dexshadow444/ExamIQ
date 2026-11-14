@@ -116,7 +116,8 @@ export const appState = {
   dashboardTopicFilter: 'all',
 
   paperConfig: {
-    title: 'Class 12 Mid-Term Assessment — Mathematics',
+    title: 'Class 12 Mid-Term Assessment — Physics',
+    subject: 'Physics',
     totalMarks: 50,
     durationMinutes: 90,
     language: 'bilingual',
@@ -126,6 +127,9 @@ export const appState = {
   generatedPaper: null,
   paperPreviewTab: 'paper',
   paperGenerating: false,
+  paperGenerationStep: 0,
+  datasetStatus: null,
+  datasetStatusLoading: false,
 
   selectedEndpointIdx: 0,
   apiCategory: 'All',

@@ -28,6 +28,13 @@ class Settings:
         "*"
     ]
 
+    # LLM Settings (Groq)
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
+    LLM_MAX_RETRIES: int = int(os.getenv("LLM_MAX_RETRIES", "3"))
+    LLM_TIMEOUT: float = float(os.getenv("LLM_TIMEOUT", "30.0"))
+
+
 
 settings = Settings()
 
